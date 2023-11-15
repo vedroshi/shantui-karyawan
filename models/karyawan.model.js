@@ -1,9 +1,5 @@
-const {sequelize} = require('../db_connect')
+const {sequelize} = require('../utils/db_connect')
 const {DataTypes} = require('sequelize')
-
-const Position = require('./position.model')
-const Address = require('./address.model')
-
 
 const karyawan = sequelize.define("Employee", {
     ID : {
@@ -12,7 +8,7 @@ const karyawan = sequelize.define("Employee", {
         primaryKey : true,
     },
     NIK : {
-        type : DataTypes.INTEGER(16),
+        type : DataTypes.BIGINT.UNSIGNED,
         unique : true,
         allowNull : false,
     },
@@ -21,7 +17,7 @@ const karyawan = sequelize.define("Employee", {
         allowNull : false,
     },
     DOB : {
-        type : DataTypes.DATE,
+        type : DataTypes.DATEONLY,
         allowNull : false,
     },
     POB : {
@@ -33,7 +29,7 @@ const karyawan = sequelize.define("Employee", {
         allowNull : false
     },
     Join_Date : {
-        type : DataTypes.DATE,
+        type : DataTypes.DATEONLY,
         allowNull : false,
     },
     KTP : {
@@ -44,8 +40,5 @@ const karyawan = sequelize.define("Employee", {
     createdAt : false,
     updatedAt : false,
 })
-
-karyawan.belongsTo(Position)
-karyawan.belongsTo(Address)
 
 module.exports = karyawan

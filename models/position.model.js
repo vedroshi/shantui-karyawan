@@ -1,6 +1,5 @@
-const {sequelize} = require('../db_connect')
+const {sequelize} = require('../utils/db_connect')
 const {DataTypes} = require('sequelize')
-
 
 const positions = sequelize.define("Position",{
         ID: {
@@ -22,6 +21,5 @@ const positions = sequelize.define("Position",{
         updatedAt : false
     }
 )
-
 
 module.exports = positions

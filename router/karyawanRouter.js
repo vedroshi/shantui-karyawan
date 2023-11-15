@@ -29,7 +29,15 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({storage : storage, fileFilter : fileFilter})
 
+router.get('/' , controller.showKaryawan)
 router.post('/create' , upload.single('KTP'), controller.addKaryawan)
+
+
+router.use((err, req, res, next) => {
+  // console.error(err.stack);
+  res.status(500).json({ error: err.message });
+});
+
 
 
 module.exports = router

@@ -18,7 +18,7 @@ class PositionService{
             if(created){
                 console.info("Position Created")
             }else{
-                console.info(`The ID is ${data.ID}`)
+                console.info(`Position ${data.Name} is exist`)
             }
             return data
         } catch(error)  {
