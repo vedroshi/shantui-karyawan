@@ -24,6 +24,10 @@ const karyawan = sequelize.define("Employee", {
         type : DataTypes.STRING,
         allowNull : false
     },
+    Address : {
+        type : DataTypes.TEXT,
+        allowNull : false,
+    },
     Religion : {
         type : DataTypes.STRING,
         allowNull : false

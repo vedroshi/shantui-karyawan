@@ -8,7 +8,6 @@ require('dotenv').config()
 const app = express()
 const karyawanRouter = require('./router/karyawanRouter')
 const positionRouter = require('./router/positionRouter')
-const addressRouter = require('./router/addressRouter')
 const companyRouter = require('./router/companyRouter')
 
 const port = process.env.PORT || 3001
@@ -20,7 +19,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/karyawan', karyawanRouter)
 app.use('/position', positionRouter)
-app.use('/address', addressRouter)
 app.use('/company' , companyRouter)
 
 // Load Database Association

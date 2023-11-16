@@ -2,11 +2,9 @@ const { sequelize } = require("../utils/db_connect");
 const karyawanModel = require("../models/karyawan.model");
 
 const positionService = require("./positionService");
-const addressService = require("./addressService");
 const companyService = require("./companyService");
 const StatusService = require("./statusService");
 
-const addressModel = require("../models/address.model");
 const positionModel = require("../models/position.model");
 const statusModel = require("../models/status.model");
 const companyModel = require("../models/company.model");
@@ -18,19 +16,17 @@ class karyawanService {
   async addKaryawan(data, file) {
     try {
       const positionData = data.Position;
-      const addressData = data.Address;
       const companyData = data.Company;
       const KTP = file
 
       const newKaryawan = sequelize.transaction(async (t) => {
         try {
-          const aService = new addressService();
+
           const pService = new positionService();
           const cService = new companyService();
           const sService = new StatusService();
           const appService = new ApplicationService();
 
-          const address = await aService.upsertAddress(addressData);
           const position = await pService.upsertPosition(positionData);
           const company = await cService.upsertCompany(companyData);
 
@@ -39,9 +35,9 @@ class karyawanService {
             Name: data.Name,
             DOB: data.DOB,
             POB: data.POB,
+            Address : data.Address,
             Religion: data.Religion,
             Join_Date: data.Join_Date,
-            AddressID: address.ID,
             PositionID: position.ID,
             CompanyID: company.ID,
             KTP : KTP.name || KTP.filename
@@ -79,12 +75,9 @@ class karyawanService {
     try { 
       const karyawan = await karyawanModel.findAll({
         attributes: {
-          exclude: ['AddressID', 'CompanyID', 'PositionID'],
+          exclude: [ 'CompanyID', 'PositionID'],
         },
-        include : [{
-          model: addressModel,
-          as: 'Address',
-        },
+        include : [
         {
           model: positionModel,
           as: 'Position',
