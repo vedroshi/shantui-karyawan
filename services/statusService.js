@@ -30,6 +30,22 @@ class StatusService{
             throw new Error(error)
         }
     }
+
+    async setEndCuti(ID, endCuti){
+        try{
+            const changes = statusModel.update({
+                End : endCuti
+            },{
+                where : {
+                    EmployeeID : ID,
+                    Status : 'Cuti'
+                }
+            })
+            return changes
+        } catch(error){
+            throw new Error(error)
+        }
+    }
 }
 
 module.exports = StatusService

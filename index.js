@@ -9,6 +9,8 @@ const app = express()
 const karyawanRouter = require('./router/karyawanRouter')
 const positionRouter = require('./router/positionRouter')
 const companyRouter = require('./router/companyRouter')
+const applicationRouter = require('./router/applicationRouter')
+const statusRouter = require('./router/status.Router')
 
 const port = process.env.PORT || 3001
 
@@ -20,6 +22,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/karyawan', karyawanRouter)
 app.use('/position', positionRouter)
 app.use('/company' , companyRouter)
+app.use('/apply' , applicationRouter)
+app.use('/status', statusRouter)
 
 // Load Database Association
 require('./utils/db_associations')

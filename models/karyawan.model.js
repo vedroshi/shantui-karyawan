@@ -8,7 +8,7 @@ const karyawan = sequelize.define("Employee", {
         primaryKey : true,
     },
     NIK : {
-        type : DataTypes.BIGINT.UNSIGNED,
+        type : DataTypes.STRING(16),
         unique : true,
         allowNull : false,
     },

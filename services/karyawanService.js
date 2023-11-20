@@ -45,7 +45,7 @@ class karyawanService {
 
           if(karyawan){
             await sService.addStatus(karyawan);
-            await appService.addApplication(karyawan);
+            await appService.addApplication(karyawan.ID);
           }
 
           return karyawan;

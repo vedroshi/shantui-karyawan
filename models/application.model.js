@@ -8,7 +8,7 @@ const ApplicationModel = sequelize.define("Application" , {
         allowNull : false,
         unique : true
     },
-    Application_Date : {
+    Apply_Date : {
         type : DataTypes.DATEONLY,
         allowNull : false
     },
