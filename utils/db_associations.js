@@ -6,6 +6,7 @@ const companyModel = require('../models/company.model')
 const logModel = require('../models/log.model')
 const applicationModel = require('../models/application.model')
 const ApplicationModel = require('../models/application.model')
+const LogModel = require('../models/log.model')
 
 
 // Karyawan
@@ -15,6 +16,10 @@ karyawanModel.hasOne(statusModel, {
     foreignKey : 'EmployeeID'
 })
 karyawanModel.hasOne(ApplicationModel, {
+    foreignKey : 'EmployeeID'
+})
+
+karyawanModel.hasMany(LogModel, {
     foreignKey : 'EmployeeID'
 })
 

@@ -3,14 +3,18 @@ const {sequelize} = require('../utils/db_connect')
 const {DataTypes} = require('sequelize')
 
 const LogModel = sequelize.define('Log' , {
+    ID : {
+        type : DataTypes.INTEGER,
+        autoIncrement : true,
+        primaryKey : true,
+        allowNull : false
+    },
     EmployeeID :{
         type : DataTypes.INTEGER,
         allowNull : false,
-        primaryKey : true,
-        unique : true
     },
     CreatedAt : {
-        type : DataTypes.DATE,
+        type : DataTypes.DATEONLY,
         allowNull : false
     },
     Message : {
@@ -23,6 +27,10 @@ const LogModel = sequelize.define('Log' , {
     },
     End : {
         type : DataTypes.DATEONLY
+    },
+    Type : {
+        type : DataTypes.ENUM("Contract", "Apply", "Cuti", "Resign"),
+        allowNull : true
     }
 }, {
     tableName : 'log_karyawan',

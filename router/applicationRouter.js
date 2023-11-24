@@ -9,6 +9,7 @@ const controller = new applicationController()
 router.post('/:id', controller.applyForm)
 router.patch('/approve/:id', controller.approve)
 router.patch('/reject/:id' , controller.reject)
+router.patch('/return/:id', controller.setReturn)
 
 router.use((err, req, res, next) => {
     console.error(err.stack);

@@ -2,7 +2,7 @@ const statusModel = require('../models/status.model')
 const {getDateObj} = require('../utils/utils')
 
 class StatusService{
-    async addStatus(karyawan){
+    async addStatus(karyawan, t){
         try{
      
             const newStatus = await statusModel.create({
@@ -10,7 +10,7 @@ class StatusService{
                 Status : "Active",
                 Start : karyawan.Join_Date,
                 End : getDateObj(karyawan.Join_Date).setMonth(getDateObj(karyawan.Join_Date).getMonth() + 6)
-            })
+            }, {transaction : t})
             
             return newStatus
         }catch(error){
@@ -43,6 +43,23 @@ class StatusService{
             })
             return changes
         } catch(error){
+            throw new Error(error)
+        }
+    }
+
+    async updateStatus(ID, status, start, end){
+        try{
+            const changes = statusModel.update({
+                Status : status,
+                Start : start,
+                End : end
+            }, {
+                where :{
+                    EmployeeID : ID
+                }
+            })
+            return changes
+        }catch(error){
             throw new Error(error)
         }
     }

@@ -1,8 +1,9 @@
 const PositionModel = require('../models/position.model')
 
 class PositionService{
-    async upsertPosition (position) {
+    async upsertPosition (position, t = null) {
         try{
+        
             position.Tonnage = position.Tonnage || null
     
             const [data, created] = await PositionModel.findOrCreate({
@@ -12,7 +13,8 @@ class PositionService{
                 },
                 defaults : {
                     Tonnage : position.Tonnage
-                }
+                },
+                transaction : t
             })
             
             if(created){

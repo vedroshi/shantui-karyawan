@@ -14,7 +14,7 @@ const ApplicationModel = sequelize.define("Application" , {
     },
     Application_Type : {
         type : DataTypes.ENUM,
-        values : ['Cuti', 'Kompensasi', 'Resign'],
+        values : ['Cuti', 'Kompensasi', 'Resign', 'Return'],
         allowNull : true,
         defaultValue : null,
     },

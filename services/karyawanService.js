@@ -1,16 +1,22 @@
 const { sequelize } = require("../utils/db_connect");
+const { getDateObj, displayDate } = require('../utils/utils')
+
 const karyawanModel = require("../models/karyawan.model");
 
 const positionService = require("./positionService");
 const companyService = require("./companyService");
 const StatusService = require("./statusService");
+const LogService = require("./logService");
+const ApplicationService = require("./applicationService");
+
 
 const positionModel = require("../models/position.model");
 const statusModel = require("../models/status.model");
 const companyModel = require("../models/company.model");
 const siteModel = require("../models/site.model");
-const ApplicationService = require("./applicationService");
 const ApplicationModel = require("../models/application.model");
+const logModel = require('../models/log.model')
+
 
 class karyawanService {
   async addKaryawan(data, file) {
@@ -26,9 +32,10 @@ class karyawanService {
           const cService = new companyService();
           const sService = new StatusService();
           const appService = new ApplicationService();
+          const lService = new LogService()
 
-          const position = await pService.upsertPosition(positionData);
-          const company = await cService.upsertCompany(companyData);
+          const position = await pService.upsertPosition(positionData, t);
+          const company = await cService.upsertCompany(companyData, t);
 
           const karyawan = await karyawanModel.create({
             NIK: data.NIK,
@@ -41,11 +48,18 @@ class karyawanService {
             PositionID: position.ID,
             CompanyID: company.ID,
             KTP : KTP.name || KTP.filename
-          });
+          }, {transaction : t});
 
           if(karyawan){
-            await sService.addStatus(karyawan);
-            await appService.addApplication(karyawan.ID);
+            await sService.addStatus(karyawan, t);
+            await appService.addApplication(karyawan.ID, t);
+            const logData  = {
+              Start : data.Join_Date,
+              End : getDateObj(data.Join_Date).setMonth(getDateObj(data.Join_Date).getMonth() + 6),
+              Type : "Contract",
+              Message : `Masuk Kerja di tanggal ${displayDate(getDateObj(data.Join_Date))}`
+            }
+            await lService.createLog(karyawan.ID, logData, t)
           }
 
           return karyawan;
@@ -99,6 +113,10 @@ class karyawanService {
         {
           model : ApplicationModel,
           as : 'Application'
+        },
+        {
+          model : logModel,
+          as : 'Logs'
         }
       ]
       })
@@ -108,6 +126,8 @@ class karyawanService {
       throw new Error(error)
     }
   }
+
+
 }
 
 module.exports = karyawanService;

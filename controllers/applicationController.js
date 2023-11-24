@@ -26,10 +26,7 @@ class ApplicationController {
         await service.approve(id)
         .then((response)=>{
             if(response){
-                res.status(200).json({
-                    status : "Accepted",
-                    message : "Application Approved"
-                })
+                res.status(200).json(response)
             }
         }).catch((error)=>{
             if(error.message == "Application not Found"){
@@ -62,6 +59,24 @@ class ApplicationController {
                 next(error)
             }
        })
+    }
+
+    async setReturn(req, res, next){
+        const id = req.params.id
+        const data = req.body
+        const service = new applicationService()
+
+        await service.setReturn(id, data)
+        .then((response)=>{
+            if(response){
+                res.status(200).json({
+                    ...data,
+                    message : "Contract Registered"
+                })
+            }
+        }).catch((error)=>{
+            next(error)
+        })
     }
 }
 

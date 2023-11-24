@@ -4,13 +4,13 @@ const companyModel = require('../models/company.model')
 const {Op} = require('sequelize')
 
 class CompanyService{
-    async upsertCompany(company){
+    async upsertCompany(company, t = null){
         try { 
-
             const [site, site_created] = await siteModel.findOrCreate({
                 where : {
                     Name : company.Site
-                }
+                },
+                transaction : t
             })
 
             if(site_created){
@@ -30,7 +30,8 @@ class CompanyService{
                 defaults: { 
                     SiteID: site.ID, 
                     Name: company.Name 
-                }
+                },
+                transaction : t
             })
             if(created){
                 console.info("Company Added to Database")
