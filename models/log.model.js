@@ -23,13 +23,12 @@ const LogModel = sequelize.define('Log' , {
     },
     Start : {
         type : DataTypes.DATEONLY,
-        allowNull : false
     },
     End : {
         type : DataTypes.DATEONLY
     },
     Type : {
-        type : DataTypes.ENUM("Contract", "Apply", "Cuti", "Resign"),
+        type : DataTypes.ENUM("Contract", "Apply", "Cuti", "Resign", "Accept", "Reject", "Edit", "Return", "Cut Off"),
         allowNull : true
     }
 }, {

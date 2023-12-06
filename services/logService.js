@@ -44,7 +44,7 @@ class LogService {
         }
     }
 
-    async checkLastContract(ID){
+    async checkLastContract(ID, t=null){
         try { 
             const lastContract = await logModel.findOne({
                 where : {
@@ -57,7 +57,8 @@ class LogService {
                     ['ID', 'DESC'],
                     ['CreatedAt' , 'DESC'],
                 ],
-                limit : 1
+                limit : 1,
+                transaction : t
             })
             
             return lastContract

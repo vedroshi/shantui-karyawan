@@ -11,13 +11,20 @@ const formatDate = (date) =>{
     return formattedDate
 }
 
+const revertDate = (date) =>{
+    const formattedDate = moment(date).format('DD/MM/YYYY')
+    return formattedDate
+}
+
 const displayDate = (date) =>{
     const formatDate = moment(date).format('DD MMMM YYYY')
     return formatDate
 }
 
+
 module.exports = {
     getDateObj,
     formatDate,
     displayDate,
+    revertDate,
 }

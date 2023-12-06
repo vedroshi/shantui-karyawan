@@ -1,0 +1,27 @@
+{
+  "development": {
+    "username": "root",
+    "password": "shiindonesia",
+    "database": "shantuidb",
+    "host": "127.0.0.1",
+    "dialect": "mysql",
+    "modelsPath": "models",
+    "migrationsPath": "migrations",
+    "migrationStorageTableName": "karyawan_migrations"
+  },
+
+  "test": {
+    "username": "root",
+    "password": null,
+    "database": "database_test",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "production": {
+    "username": "root",
+    "password": null,
+    "database": "database_production",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  }
+}

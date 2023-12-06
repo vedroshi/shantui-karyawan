@@ -11,11 +11,18 @@ class ApplicationController {
             if(response){
                 res.status(200).json({
                     application: formData,
+                    log : response.logData,
                     message : 'Application Submitted'
                 })
             }
         }).catch((error)=>{
-            next(error)
+            if(error.message == "Form Does not Change"){
+                res.status(400).json({
+                    message : "The form has not been modified. No changes have been made."
+                })
+            }else{
+                next(error)
+            }
         })
     }
 

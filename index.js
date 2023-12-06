@@ -30,6 +30,9 @@ app.use('/logs', logRouter)
 // Load Database Association
 require('./utils/db_associations')
 
+// Load Scheduler
+require('./utils/scheduler')
+
 sequelize.sync().then(()=>{
     console.log("Database Synchronized")
 }).catch((error)=>{

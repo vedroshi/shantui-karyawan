@@ -14,8 +14,9 @@ const positionModel = require("../models/position.model");
 const statusModel = require("../models/status.model");
 const companyModel = require("../models/company.model");
 const siteModel = require("../models/site.model");
-const ApplicationModel = require("../models/application.model");
-const logModel = require('../models/log.model')
+const applicationModel = require("../models/application.model");
+const logModel = require('../models/log.model');
+const { Op } = require("sequelize");
 
 
 class karyawanService {
@@ -53,6 +54,8 @@ class karyawanService {
           if(karyawan){
             await sService.addStatus(karyawan, t);
             await appService.addApplication(karyawan.ID, t);
+            
+            // Log
             const logData  = {
               Start : data.Join_Date,
               End : getDateObj(data.Join_Date).setMonth(getDateObj(data.Join_Date).getMonth() + 6),
@@ -111,7 +114,7 @@ class karyawanService {
           as : 'Status'
         },
         {
-          model : ApplicationModel,
+          model : applicationModel,
           as : 'Application'
         },
         {
@@ -126,7 +129,6 @@ class karyawanService {
       throw new Error(error)
     }
   }
-
 
 }
 

@@ -26,12 +26,23 @@ const fileFilter = (req, file, cb) => {
     }
 };
   
-
 const upload = multer({storage : storage, fileFilter : fileFilter})
 
+
+
 router.get('/' , controller.showKaryawan)
+
 router.post('/create' , upload.single('KTP'), controller.addKaryawan)
 
+router.get('/getKTP/:ktp', (req, res)=>{
+  const ktp = req.params.ktp;
+ 
+  // Update the path to your KTP images folder
+  const filePath = path.join(__dirname, '../uploads/', ktp);
+
+  // Send the file
+  res.sendFile(filePath);
+})
 
 router.use((err, req, res, next) => {
   // console.error(err.stack);
