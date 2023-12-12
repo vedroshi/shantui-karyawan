@@ -10,6 +10,8 @@ const sequelize = new Sequelize(DB_Name, DB_Username, DB_Password, {
     dialect : 'mysql',
 })
 
+
+
 sequelize.authenticate().then(()=>{
     console.info("Connection is Successfully Established")
 }).catch((error)=>{

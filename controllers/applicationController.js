@@ -85,6 +85,8 @@ class ApplicationController {
             next(error)
         })
     }
+
+   
 }
 
 module.exports = ApplicationController

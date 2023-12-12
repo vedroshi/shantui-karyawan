@@ -31,6 +31,7 @@ const upload = multer({storage : storage, fileFilter : fileFilter})
 
 
 router.get('/' , controller.showKaryawan)
+router.get('/check', controller.checkApplication)
 
 router.post('/create' , upload.single('KTP'), controller.addKaryawan)
 

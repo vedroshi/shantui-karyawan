@@ -6,6 +6,7 @@ const controller = new statusController()
 
 router.patch('/checkexpired', controller.checkExpired)
 router.patch('/checkendcuti', controller.checkEndCuti)
+router.patch('/check' , controller.checkDue)
 
 router.post('/setendcuti/:id', controller.setEndCuti)
 router.patch('/warning' , controller.setWarning)

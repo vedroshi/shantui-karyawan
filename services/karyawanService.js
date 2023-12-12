@@ -1,5 +1,5 @@
 const { sequelize } = require("../utils/db_connect");
-const { getDateObj, displayDate } = require('../utils/utils')
+const { getDateObj, displayDate, formatDate } = require('../utils/utils')
 
 const karyawanModel = require("../models/karyawan.model");
 
@@ -130,6 +130,74 @@ class karyawanService {
     }
   }
 
+  async getKaryawanList(IDList, t=null){
+    try{
+      const karyawan = await karyawanModel.findAll({
+        attributes : ['Name'],
+        where : {
+          ID : {
+            [Op.in] : IDList
+          }
+        },
+        transaction : t
+      })
+      return karyawan
+    }catch(error){
+      throw new Error(error)
+    }
+  }
+  
+  async checkApplication(){
+    try{
+        const updatelog = []
+        const transaction = sequelize.transaction(async(t)=>{     
+            try{
+                const karyawan = await karyawanModel.findAll({
+                  include: [{
+                    model: applicationModel,
+                    as: 'Application',
+                    where: {
+                        [Op.or]: [
+                            { '$Application.Start_Cuti$': formatDate(new Date()) },
+                            { '$Application.Resign_Date$': formatDate(new Date()) },
+                        ],
+                        '$Application.Application_Status$': 'Accepted',
+                    },
+                }],
+                transaction : t
+                })
+
+                const statusService = new StatusService()
+                for (const employee of karyawan){
+                    if(employee.Application.Start_Cuti && employee.Application.Start_Cuti === formatDate(new Date())){
+                        await statusService.setCuti(employee, t)
+                        updatelog.push({
+                          ID : employee.ID,
+                          Message : "This Employee takes a leave",
+                          Type : "Cuti"
+                        })
+                    }
+                    if(employee.Application.Resign_Date && employee.Application.Resign_Date === formatDate(new Date())){
+                        await statusService.resign(employee, t)
+                        updatelog.push({
+                          ID : employee.ID,
+                          Message : "Employee Resign",
+                          Type : "Resign"
+                        })
+                    }
+                }
+
+                return updatelog
+            }catch(error){
+                t.rollback()
+                throw new Error(error)
+            }
+        })
+        return transaction
+    }catch(error){
+        throw error
+    }
+  }
 }
 
 module.exports = karyawanService;

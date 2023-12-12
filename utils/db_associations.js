@@ -5,8 +5,8 @@ const SiteModel = require('../models/site.model')
 const companyModel = require('../models/company.model')
 const logModel = require('../models/log.model')
 const applicationModel = require('../models/application.model')
-const ApplicationModel = require('../models/application.model')
 const LogModel = require('../models/log.model')
+const notificationModel = require('../models/notification.model')
 
 
 // Karyawan
@@ -15,7 +15,7 @@ karyawanModel.belongsTo(companyModel)
 karyawanModel.hasOne(statusModel, {
     foreignKey : 'EmployeeID'
 })
-karyawanModel.hasOne(ApplicationModel, {
+karyawanModel.hasOne(applicationModel, {
     foreignKey : 'EmployeeID'
 })
 

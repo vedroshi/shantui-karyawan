@@ -33,6 +33,17 @@ class KaryawanController {
         })
     }
 
+     // Check if there is an application before the contract ends
+    async checkApplication(req, res, next){
+        const service = new karyawanService()
+
+        await service.checkApplication()
+        .then((response)=>{
+            res.status(200).json(response)
+        }).catch((error)=>{
+            next(error)
+        })
+    }
 }
 
 module.exports = KaryawanController

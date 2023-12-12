@@ -2,11 +2,12 @@ const statusModel = require('../models/status.model')
 const applicationModel = require('../models/application.model')
 const karyawanModel = require('../models/karyawan.model')
 
-const {getDateObj, formatDate, displayDate, revertDate} = require('../utils/utils')
+const {getDateObj, formatDate, displayDate} = require('../utils/utils')
 const { Op } = require('sequelize')
 
 const {sequelize} = require('../utils/db_connect')
 const LogService = require('./logService')
+
 
 class StatusService {
 
@@ -62,22 +63,59 @@ class StatusService {
             const dueDate = new Date();
             dueDate.setDate(dueDate.getDate() + 7);
 
-            // Update Status = 'Warning' when End Contract is between today and next 7 days
-            const status = statusModel.update(
-                {
-                    Status : 'Warning'
-                },{
-                where : {
-                    Status : 'Active',
-                    End : { 
-                        [Op.between] : [new Date(), dueDate]
+            const transaction = await sequelize.transaction(async(t)=>{
+                try{
+                    let warningLog = [];
+
+                    const karyawan = await statusModel.findAll({
+                        attributes : ['EmployeeID'],
+                        where : {
+                            Status : 'Active',
+                            End : { 
+                                [Op.between] : [new Date(), dueDate]
+                            }
+                        },
+                        transaction : t
+                    })
+
+                    // If there is no karyawan found stop the transaction and return 0
+                    if(karyawan.length == 0){
+                        return []
                     }
+                    
+                    // Update Status = 'Warning' when End Contract is between today and next 7 days
+                    await statusModel.update(
+                        {
+                            Status : 'Warning'
+                        },{
+                        where : {
+                            Status : 'Active',
+                            End : { 
+                                [Op.between] : [new Date(), dueDate]
+                            }
+                        },
+                        transaction : t,
+                    })
+
+
+                    for (const employee of karyawan){
+                        warningLog.push({
+                            ID : employee.EmployeeID,
+                            message : "Set to Warning"
+                        })
+                    }
+
+                    return warningLog
+
+                }catch(error){
+                    t.rollback()
+                    throw new Error(error)
                 }
             })
-
-            return status
+           
+            return transaction
         }catch(error){
-          throw new Error(error)
+          throw error
         }
     }
 
@@ -112,9 +150,11 @@ class StatusService {
                             if(employee.Application.Application_Type == "Kompensasi" && employee.Application.Application_Status == "Accepted"){
                                 // Extend Contract
                                 await this.extendContract(employee, t)
+
                                 updateLog.push({
                                     ID : employee.ID,
-                                    message : "Contract has been Extended"
+                                    message : "Contract has been Extended",
+                                    type : "Contract"
                                 })
                             }else if (employee.Application.Application_Type == "Cuti" && employee.Application.Application_Status == "Accepted"){
                                 // If the Start Cuti Date is later than today
@@ -122,7 +162,8 @@ class StatusService {
                                     await this.setCuti(employee, t)
                                     updateLog.push({
                                         ID : employee.ID,
-                                        message : "This Employee takes a Leave"
+                                        message : "This Employee takes a Leave",
+                                        type : "Cuti"
                                     })
                                 }else{
                                     // Set Active from Today to Start_Cuti
@@ -130,7 +171,8 @@ class StatusService {
 
                                     updateLog.push({
                                         ID : employee.ID,
-                                        message : `Postpone Leave on ${displayDate(getDateObj(employee.Application.Start_Cuti))}`
+                                        message : `Postpone Leave on ${displayDate(getDateObj(employee.Application.Start_Cuti))}`,
+                                        type : 'Postpone'
                                     })
                                 }
                             }else if (employee.Application.Application_Type == "Resign" && employee.Application.Application_Status == "Accepted"){
@@ -139,18 +181,20 @@ class StatusService {
                                     await this.resign(employee, t)
                                     updateLog.push({
                                         ID : employee.ID,
-                                        message : `Employee Resign`
+                                        message : `Employee Resign`,
+                                        type : "Resign"
                                     })
                                 }else{
-                                    await this.updateStatus(employee.ID, "Active", new Date(), employee.Application.Resign_Date, t)
+                                    await this.setCloseProject(employee.ID, new Date(), employee.Application.Resign_Date, t)
                                 }
                             }else if(employee.Application.Application_Status == "Rejected"){
                                 await this.cutOff(employee.ID, new Date(), t)
                                 updateLog.push({
                                     ID : employee.ID,
-                                    message : `Employee Cut Off`
+                                    message : `Employee Cut Off`,
+                                    type : 'Cut Off'
                                 })
-                            }else if (employee.Application.Application_Status == "Pending"){
+                            }else if (employee.Application.Application_Status == "Pending"){ // If employee application still pending and the contract is already end
                                 if(employee.Application.Application_Type == "Cuti"){
                                     await this.setCloseProject(employee.ID, new Date(), employee.Application.Start_Cuti, t)
                                 }
@@ -161,18 +205,24 @@ class StatusService {
                                 
                                 updateLog.push({
                                     ID: employee.ID,
-                                    message : `Contract has Expired`
+                                    message : `Contract has Expired`,
+                                    type : 'Expired'
                                 })
+                            }else if (employee.Status.Status == "Close Project" && !employee.Application.Application_Status){
+                                // continue if the "Close Project" karyawan and without application
+                                continue
                             }else{
                                 await this.setCloseProject(employee.ID, employee.Status.Start, employee.Status.End, t=t)
                                 updateLog.push({
                                     ID : employee.ID,
-                                    message : `Contract has Expired`
+                                    message : `Contract has Expired`,
+                                    type : 'Expired'
                                 })
                             }
                         }
                     }
                     return updateLog
+
                 } catch(error) {
                     console.log(error)
                     await t.rollback()
@@ -214,7 +264,6 @@ class StatusService {
                             transaction : t
                         })
 
-                        
 
                         // Checking if the last contract is already expired or not
                         if(getDateObj(contract.End) <= new Date()){
@@ -248,7 +297,8 @@ class StatusService {
                         // Update Log to show which employee is Return
                         updateLog.push({
                             ID : employee.EmployeeID,
-                            Message : "Balik Cuti"
+                            Message : "Balik Cuti",
+                            type : 'Return'
                         })
                     }
                     return updateLog
@@ -318,7 +368,7 @@ class StatusService {
             Resign_Date : null
         },{
             where :  {
-                EmployeeID : ID
+                EmployeeID : employee.ID
             },
             transaction : t
         })

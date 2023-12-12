@@ -139,6 +139,30 @@ class ApplicationService{
             throw error
         }
     }
+    
+    async clearForm(ID, t=null){
+        try{
+            const cleared = await applicationModel.update({
+                Application_Type : null,
+                Application_Status : null,
+                Start_Contract : null,
+                End_Contract : null,
+                Start_Cuti : null,
+                End_Cuti : null,
+                Arrival : null,
+                Depart : null,
+                Resign_Date : null
+            },{
+                where :  {
+                    EmployeeID : ID
+                },
+                transaction : t
+            })
+            return cleared
+        } catch(error){
+            throw error
+        }
+    }
 
     // Approve application
     async approve(ID){
@@ -307,30 +331,6 @@ class ApplicationService{
             throw error
         }
     }
-    
-    async clearForm(ID, t=null){
-        try{
-            const cleared = await applicationModel.update({
-                Application_Type : null,
-                Application_Status : null,
-                Start_Contract : null,
-                End_Contract : null,
-                Start_Cuti : null,
-                End_Cuti : null,
-                Arrival : null,
-                Depart : null,
-                Resign_Date : null
-            },{
-                where :  {
-                    EmployeeID : ID
-                },
-                transaction : t
-            })
-            return cleared
-        } catch(error){
-            throw error
-        }
-    }
 
     // Reject application
     async reject(ID){
@@ -402,6 +402,7 @@ class ApplicationService{
             throw new Error(error)
         }
     }
+
 }
 
 module.exports = ApplicationService

@@ -1,21 +1,61 @@
 const schedule = require('node-schedule')
 const statusService = require('../services/statusService')
+const notificationService = require('../services/notificationService')
+const karyawanService = require('../services/karyawanService')
 
 
-// Execute Every 00:00, 09:00 and 17:00 Everyday
+// Execute Everyday at 00:00, 09:00 and 17:00 
 schedule.scheduleJob('0 0,9,17 * * *' , async ()=>{
-    const service = new statusService()
+    const statService = new statusService()
+    const notifService = new notificationService()
+    const employeeService = new karyawanService()
     
     try{
         // Call Check Expired and Check End Cuti in StatusService
-        await service.setWarning()
-        const expiredLog = await service.checkExpired()
-        const returnLog = await service.checkEndCuti()
+        const [applicationLog, warningLog, expiredLog, returnLog] = await Promise.all([
+            // Check if there is an employee have an early leave
+            employeeService.checkApplication(),
+            // Check if there is an employee has their contract end in 7 days
+            statService.setWarning(),
+            // Check if there is an employee has their contract ends
+            statService.checkExpired(),
+            // Check if there is an employee return 
+            statService.checkEndCuti(),
+        ])
     
-        const logs = [...expiredLog, ...returnLog]
+    
+        // Define logs to keep track which employee is updated
+        const logs = [...applicationLog,...warningLog, ...expiredLog, ...returnLog]
+        console.info(logs)
 
-    
-        console.log(logs)
+        // Add Notification
+        const warningEmployeeID = warningLog.map(log => log.ID)
+        const expiredEmployeeID = expiredLog.map(log => log.ID)
+        const returnEmployeeID = returnLog.map(log => log.ID)
+        
+
+        const [warningKaryawan, expiredKaryawan, returnKaryawan] = await Promise.all([
+           warningEmployeeID.length ? employeeService.getKaryawanList(warningEmployeeID) : null,
+           warningEmployeeID.length ? employeeService.getKaryawanList(expiredEmployeeID) : null,
+           warningEmployeeID.length ? employeeService.getKaryawanList(returnEmployeeID) : null,
+        ])
+     
+        const addNotifications = async (karyawanList, message) =>{
+            if (karyawanList){
+                for (const karyawan of karyawanList){
+                    notifService.addNotification(karyawan.Name, message)
+                }
+            }
+        }
+
+        await Promise.all([
+            addNotifications(warningKaryawan, "Sudah mau jatuh tempo"),
+            addNotifications(expiredKaryawan, "Sudah jatuh tempo"),
+            addNotifications(returnKaryawan, "Balik Cuti")
+        ])
+
+        // Update Calendar
+
     }catch(err){
         console.error('Error in checkExpired job:', err);
     }
