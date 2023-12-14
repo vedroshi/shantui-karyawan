@@ -2,6 +2,7 @@ const notificationModel = require('../models/notification.model')
 
 class notificationService{
     async addNotification(title, description, details, t=null){
+        
         try{
             const notif = await notificationModel.create({
                 Title : title,
@@ -27,6 +28,21 @@ class notificationService{
                 },
                 transaction : t
             })
+        }catch(error){
+            throw new Error(error)
+        }
+    }
+
+    // Get All Notifications
+    async getNotifications(){
+        try{
+            const notifications = await notificationModel.findAll({
+                group : ['ID', 'createdAt'],
+                order :[ 
+                    ['createdAt', 'DESC']
+                ]
+            })
+            return notifications
         }catch(error){
             throw new Error(error)
         }

@@ -145,12 +145,14 @@ class StatusService {
                         transaction : t
                     })
 
+                    // Check if there is an employee who applied a form
                     if(karyawan){
                         for (const employee of karyawan){
                             if(employee.Application.Application_Type == "Kompensasi" && employee.Application.Application_Status == "Accepted"){
                                 // Extend Contract
                                 await this.extendContract(employee, t)
 
+                                // Add Server Log
                                 updateLog.push({
                                     ID : employee.ID,
                                     message : "Contract has been Extended",
@@ -158,8 +160,9 @@ class StatusService {
                                 })
                             }else if (employee.Application.Application_Type == "Cuti" && employee.Application.Application_Status == "Accepted"){
                                 // If the Start Cuti Date is later than today
-                                if(getDateObj(employee.Application.Start_Cuti) <= new Date()){
+                                if(getDateObj(employee.Application.Start) <= new Date()){
                                     await this.setCuti(employee, t)
+                                    // Add Server Log
                                     updateLog.push({
                                         ID : employee.ID,
                                         message : "This Employee takes a Leave",
@@ -167,25 +170,26 @@ class StatusService {
                                     })
                                 }else{
                                     // Set Active from Today to Start_Cuti
-                                    await this.updateStatus(employee.ID, "Active", new Date(), employee.Application.Start_Cuti, t)
+                                    await this.updateStatus(employee.ID, "Active", new Date(), employee.Application.Start, t)
 
                                     updateLog.push({
                                         ID : employee.ID,
-                                        message : `Postpone Leave on ${displayDate(getDateObj(employee.Application.Start_Cuti))}`,
+                                        message : `Postpone Leave on ${displayDate(getDateObj(employee.Application.Start))}`,
                                         type : 'Postpone'
                                     })
                                 }
                             }else if (employee.Application.Application_Type == "Resign" && employee.Application.Application_Status == "Accepted"){
                                 // If the resign date is sooner than today
-                                if(getDateObj(employee.Application.Resign_Date) <= new Date()){
+                                if(getDateObj(employee.Application.Start) <= new Date()){
                                     await this.resign(employee, t)
+                                    // Add Server Log
                                     updateLog.push({
                                         ID : employee.ID,
                                         message : `Employee Resign`,
                                         type : "Resign"
                                     })
                                 }else{
-                                    await this.setCloseProject(employee.ID, new Date(), employee.Application.Resign_Date, t)
+                                    await this.setCloseProject(employee.ID, new Date(), employee.Application.Start, t)
                                 }
                             }else if(employee.Application.Application_Status == "Rejected"){
                                 await this.cutOff(employee.ID, new Date(), t)
@@ -195,14 +199,10 @@ class StatusService {
                                     type : 'Cut Off'
                                 })
                             }else if (employee.Application.Application_Status == "Pending"){ // If employee application still pending and the contract is already end
-                                if(employee.Application.Application_Type == "Cuti"){
-                                    await this.setCloseProject(employee.ID, new Date(), employee.Application.Start_Cuti, t)
+                                if(employee.Application.Application_Type == "Cuti" || employee.Application.Application_Type == "Kompensasi"){
+                                    await this.setCloseProject(employee.ID, new Date(), employee.Application.Start, t)
                                 }
-
-                                if(employee.Application.Application_Type == "Kompensasi"){
-                                    await this.setCloseProject(employee.ID, new Date(), employee.Application.Start_Contract, t)
-                                }
-                                
+                                // Add Server Log
                                 updateLog.push({
                                     ID: employee.ID,
                                     message : `Contract has Expired`,
@@ -297,7 +297,7 @@ class StatusService {
                         // Update Log to show which employee is Return
                         updateLog.push({
                             ID : employee.EmployeeID,
-                            Message : "Balik Cuti",
+                            message : "Balik Cuti",
                             type : 'Return'
                         })
                     }
@@ -315,12 +315,12 @@ class StatusService {
     async extendContract(employee, t=null){
         const logService = new LogService()
 
-        this.updateStatus(employee.ID, "Active", employee.Application.Start_Contract,  employee.Application.End_Contract, t=t)
+        this.updateStatus(employee.ID, "Active", employee.Application.Start,  employee.Application.End, t=t)
         
         await logService.createLog(employee.ID, {
             CreatedAt : formatDate(new Date()),
-            Start : employee.Application.Start_Contract,
-            End : employee.Application.End_Contract,
+            Start : employee.Application.Start,
+            End : employee.Application.End,
             Type : "Contract",
             Message : `Lanjut Kontrak`
         }, t)
@@ -328,13 +328,10 @@ class StatusService {
         await applicationModel.update({
             Application_Type : null,
             Application_Status : null,
-            Start_Contract : null,
-            End_Contract : null,
-            Start_Cuti : null,
-            End_Cuti : null,
-            Arrival : null,
+            Start : null,
+            End : null,
             Depart : null,
-            Resign_Date : null
+            Arrival : null,
         },{
             where :  {
                 EmployeeID : employee.ID
@@ -355,17 +352,14 @@ class StatusService {
 
     async setCuti(employee, t=null){
         const logService = new LogService()
-        await this.updateStatus(employee.ID, "Cuti", employee.Application.Start_Cuti, employee.Application.End_Cuti, t)
+        await this.updateStatus(employee.ID, "Cuti", employee.Application.Start, employee.Application.End, t)
 
         // Removing all from the application except "Depart" and "Arrival"
         await applicationModel.update({
             Application_Type : null,
             Application_Status : null,
-            Start_Contract : null,
-            End_Contract : null,
-            Start_Cuti : null,
-            End_Cuti : null,
-            Resign_Date : null
+            Start : null,
+            End : null,
         },{
             where :  {
                 EmployeeID : employee.ID
@@ -374,9 +368,9 @@ class StatusService {
         })
 
         await logService.createLog(employee.ID, {
-            Start : employee.Application.Start_Cuti,
+            Start : employee.Application.Start,
             Type : "Cuti",
-            Message : `${employee.Application.Depart ? `Berangkat dari ${employee.Application.Depart} ke ${employee.Application.Arrival}` : 'Mulai Cuti'} tanggal ${displayDate(getDateObj(employee.Application.Start_Cuti))}`,
+            Message : `${employee.Application.Depart ? `Berangkat dari ${employee.Application.Depart} ke ${employee.Application.Arrival}` : 'Mulai Cuti'} tanggal ${displayDate(getDateObj(employee.Application.Start))}`,
         }, t)
     }
 
@@ -399,12 +393,12 @@ class StatusService {
     async resign(employee, t=null){
         const logService = new LogService()
 
-        await this.updateStatus(employee.ID, "Resign", employee.Application.Resign_Date, null, t=t)
+        await this.updateStatus(employee.ID, "Resign", employee.Application.Start, null, t=t)
         
         await logService.createLog(employee.ID, {
-            Start : employee.Application.Start_Cuti,
+            Start : employee.Application.Start,
             Type : "Resign",
-            Message : `Resign Tanggal ${displayDate(getDateObj(employee.Application.Start_Cuti))}`
+            Message : `Resign Tanggal ${displayDate(getDateObj(employee.Application.Start))}`
         }, t)
     }
 
@@ -424,13 +418,10 @@ class StatusService {
             await applicationModel.update({
                 Application_Type : null,
                 Application_Status : null,
-                Start_Contract : null,
-                End_Contract : null,
-                Start_Cuti : null,
-                End_Cuti : null,
+                Start : null,
+                End : null,
                 Arrival : null,
                 Depart : null,
-                Resign_Date : null
             },{
                 where :  {
                     EmployeeID : ID

@@ -24,16 +24,10 @@ const ApplicationModel = sequelize.define("Application" , {
         allowNull : true,
         defaultValue : null
     },
-    Start_Contract : {
-        type : DataTypes.DATEONLY
+    Start : {
+        type : DataTypes.DATEONLY,
     },
-    End_Contract : {
-        type : DataTypes.DATEONLY
-    },
-    Start_Cuti : {
-        type : DataTypes.DATEONLY
-    },
-    End_Cuti : {
+    End : {
         type : DataTypes.DATEONLY
     },
     Depart : {
@@ -42,9 +36,6 @@ const ApplicationModel = sequelize.define("Application" , {
     Arrival : {
         type : DataTypes.STRING
     },
-    Resign_Date : {
-        type : DataTypes.DATEONLY
-    }
 },{
     tableName : 'karyawan_pengajuan',
     createdAt : false,

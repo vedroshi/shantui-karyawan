@@ -16,13 +16,10 @@ class ApplicationService{
                 Apply_Date : new Date(),
                 Application_Type : null,
                 Application_Status : null,
-                Start_Contract : null,
-                End_Contract : null,
-                Start_Cuti : null,
-                End_Cuti : null,
-                depart : null,
-                arrival : null,
-                Resign_Date : null
+                Start : null,
+                End : null,
+                Depart : null,
+                Arrival : null
             }, {transaction : t})
             return application
         }catch(error){
@@ -60,14 +57,15 @@ class ApplicationService{
                         Type : "Apply",
                     }
 
-                    const areFormsEqual = Object.keys(form).every((key) => {
-                        return currentApplication[key] === form[key];
-                    });
+                    const areFormsEqual = Object.keys(form).every(
+                        (key) => currentApplication[key] === form[key]
+                    );
     
                     if (areFormsEqual) {
                         throw new Error("Form Does not Change");
                     }
                    
+                    // Update the Form
                     const application = await applicationModel.update(form, {
                         where : {
                             EmployeeID : ID
@@ -75,49 +73,49 @@ class ApplicationService{
                         transaction : t
                     })
                   
-
-                    if(form.Application_Type == "Kompensasi"){
-                        logData.Start = form.Start_Contract
-                        logData.End = form.End_Contract
-                        logData.Message = "Ajukan Kompensasi"
+                    // Set Up Log
+                    switch (form.Application_Type) {
+                        case "Kompensasi":
+                          logData.Start = form.Start;
+                          logData.End = form.End;
+                          logData.Message = "Ajukan Kompensasi";
+                          break;
+                        case "Cuti":
+                          logData.Start = form.Start;
+                          logData.End = form.End;
+                          logData.Message = `Ajukan Cuti dari Tanggal ${displayDate(logData.Start)} ${logData.End ? `Sampai ${displayDate(logData.End)}` : ""}`;
+                          break;
+                        case "Resign":
+                          logData.Start = form.Start;
+                          logData.Message = `Ajukan Resign tanggal ${logData.Start}`;
+                          break;
                     }
 
-                    if(form.Application_Type == "Cuti"){
-                        logData.Start = form.Start_Cuti
-                        logData.End = form.End_Cuti
-                        logData.Message = `Ajukan Cuti dari Tanggal ${displayDate(logData.Start)} ${logData.End ? `Sampai ${displayDate(logData.End)}`: "" }`
-                    }
-
-                    if(form.Application_Type == "Resign"){
-                        logData.Start = form.Resign_Date
-                        logData.Message = `Ajukan Resign tanggal ${logData.Start}`
-                    }
 
                     if(currentApplication.Application_Status == "Pending"){
                         var changedForm = [];
+
+                        // Push the changed attribute
                         for(const attr of Object.keys(currentApplication.dataValues)){
                             if(currentApplication.dataValues[attr] != form[attr]){
                                 changedForm.push(attr)
                             }
                         }
                         
-                        if(changedForm.includes('Start_Cuti')){
-                            logData.Message = `Ganti Mulai Cuti menjadi ${displayDate(form.Start_Cuti)}`
+                        // Change Message According to changed attribute
+                        if(changedForm.includes('Start')){
+                            logData.Message = `Ganti tanggal ${form.Application_Type} menjadi ${displayDate(form.Start)}`
                         }
 
-                        if(changedForm.includes('End_Cuti')){
-                            logData.Message = `Undur Balik Cuti menjadi ${displayDate(form.End_Cuti)}`
+                        if(changedForm.includes('End') && form.Application_Type == "Cuti"){
+                            logData.Message = `Ganti Balik ${form.Application_Type} menjadi ${displayDate(form.End)}`
                             if(form.End_Cuti == null){
-                                logData.Message = `Perpanjang Cuti`
+                                logData.Message = `Balik ${form.Application_Type} tanggal ${displayDate(form.End)}`
                             }
                         }
 
-                        if(changedForm.includes('Depart') || changedForm.includes('Arrival') && !changedForm.includes('Start_Cuti')){
+                        if(changedForm.includes('Depart') || changedForm.includes('Arrival') && !changedForm.includes('Start')){
                             logData.Message = `${form.Depart && form.Arrival ? `Ganti Destinasi dari ${form.Depart} ke ${form.Arrival}` : `Tidak Jadi Berangkat`}`
-                        }
-
-                        if(changedForm.includes('Resign_Date')){
-                            logData.Message = `Ganti tanggal Resign menjadi ${form.Resign_Date}`
                         }
 
                         if(changedForm.includes('Application_Type')){
@@ -145,13 +143,10 @@ class ApplicationService{
             const cleared = await applicationModel.update({
                 Application_Type : null,
                 Application_Status : null,
-                Start_Contract : null,
-                End_Contract : null,
-                Start_Cuti : null,
-                End_Cuti : null,
+                Start : null,
+                End : null,
                 Arrival : null,
                 Depart : null,
-                Resign_Date : null
             },{
                 where :  {
                     EmployeeID : ID
@@ -173,6 +168,7 @@ class ApplicationService{
                     const sService = new StatusService()
                     const logUpdates = []
 
+                    // Update Application Status in Database
                     const approved = await applicationModel.update({
                         Application_Status : "Accepted"
                     },{
@@ -190,6 +186,7 @@ class ApplicationService{
                         throw new Error("Application not Found") 
                     }
                     
+                    
                     const application = await applicationModel.findOne({
                         where : {
                             EmployeeID : ID
@@ -199,38 +196,42 @@ class ApplicationService{
 
                     const acceptLog = {
                         CreatedAt : formatDate(new Date()),
-                        Start : application.Start_Cuti,
-                        End : application.End_Cuti,
+                        Start : application.Start,
+                        End : application.End,
                         Message : `Pengajuan ${application.Application_Type} disetujui`,
                         Type : "Accept"
                     }
-                    await lService.createLog(ID, acceptLog, t)
 
+                    // Add Log (Client and Server)
+                    await lService.createLog(ID, acceptLog, t)
                     logUpdates.push(acceptLog)
 
                     if(application.Application_Type == "Kompensasi"){
                         // Check if the date is before today
-                        if(getDateObj(application.Start_Contract) <= new Date()){
-                            await sService.updateStatus(ID, "Active", application.Start_Contract, application.End_Contract, t)
+                        if(getDateObj(application.Start) <= new Date()){
+                            await sService.updateStatus(ID, "Active", application.Start, application.End, t)
                             
                             const extendLog =  {
                                 CreatedAt : formatDate(new Date()),
-                                Start : application.Start_Contract,
-                                End : application.End_Contract,
-                                Message : `Lanjut Kontrak tanggal ${displayDate(getDateObj(application.Start_Contract))}`,
+                                Start : application.Start,
+                                End : application.End,
+                                Message : `Lanjut Kontrak tanggal ${displayDate(getDateObj(application.Start))}`,
                                 Type : "Contract"
                             }
 
+                            // Add Log (Client Log)
                             await lService.createLog(ID, extendLog, t)
 
                             const currentStatus = {
                                 Status : "Active",
-                                Start : application.Start_Contract,
-                                End : application.End_Contract,
+                                Start : application.Start,
+                                End : application.End,
                                 message : "Status Changed to Active",
                             }
                             
+                            // Add Log (Server Log)
                             logUpdates.push(extendLog)
+
                             await this.clearForm(ID, t)
                             return {
                                 status : "Accepted",
@@ -243,14 +244,14 @@ class ApplicationService{
                     
                     if(application.Application_Type == "Cuti"){
                         // Check if the date is before today
-                        if(getDateObj(application.Start_Cuti) <= new Date()){
-                            await sService.updateStatus(ID, application.Application_Type, application.Start_Cuti, application.End_Cuti, t)
+                        if(getDateObj(application.Start) <= new Date()){
+                            await sService.updateStatus(ID, application.Application_Type, application.Start, application.End, t)
                             
                             const leaveLog =  {
                                 CreatedAt : formatDate(new Date()),
-                                Start : application.Start_Cuti,
-                                End : application.End_Cuti,
-                                Message : `${application.Depart ? `Berangkat dari ${application.Depart} ke ${application.Arrival}` : 'Mulai Cuti'} tanggal ${displayDate(getDateObj(application.Start_Cuti))}`,
+                                Start : application.Start,
+                                End : application.End,
+                                Message : `${application.Depart ? `Berangkat dari ${application.Depart} ke ${application.Arrival}` : 'Mulai Cuti'} tanggal ${displayDate(getDateObj(application.Start))}`,
                                 Type : "Cuti"
                             }
 
@@ -258,8 +259,8 @@ class ApplicationService{
 
                             const currentStatus = {
                                 Status : application.Application_Type,
-                                Start : application.Start_Cuti,
-                                End : application.End_Cuti,
+                                Start : application.Start,
+                                End : application.End,
                                 message : "Status Changed to Cuti",
                             }
                             
@@ -268,11 +269,8 @@ class ApplicationService{
                             await applicationModel.update({
                                 Application_Type : null,
                                 Application_Status : null,
-                                Start_Contract : null,
-                                End_Contract : null,
-                                Start_Cuti : null,
-                                End_Cuti : null,
-                                Resign_Date : null
+                                Start : null,
+                                End : null,
                             },{
                                 where :  {
                                     EmployeeID : ID
@@ -288,23 +286,25 @@ class ApplicationService{
                         }
                     }
 
+
                     if(application.Application_Type == "Resign"){
-                        if(getDateObj(application.Resign_Date) <= new Date()){
+                        if(getDateObj(application.Start) <= new Date()){
                             //update Status
-                            await sService.updateStatus(ID, application.Application_Type, application.Resign_Date, t)
+                            await sService.updateStatus(ID, application.Application_Type, application.Start, t)
                             const resignLog = {
                                 CreatedAt :  formatDate(new Date()),
-                                Start : application.Resign_Date,
-                                Message : `Resign tanggal ${displayDate(getDateObj(application.Resign_Date))}`,
+                                Start : application.Start,
+                                Message : `Resign tanggal ${displayDate(getDateObj(application.Start))}`,
                                 Type : "Resign"
                             }
 
+                            // Add Log (Server and Client)
                             await lService.createLog(ID, resignLog, t)
                             logUpdates.push(resignLog)
 
                             const currentStatus = {
                                 Status : application.Application_Type,
-                                Start : application.Resign_Date,
+                                Start : application.Start,
                                 message : "Status Changed to Resign"
                             }   
                          
@@ -321,6 +321,7 @@ class ApplicationService{
                         status : "Accepted",
                         message : "Application Accepted"
                     }
+
                 }catch(error){
                     await t.rollback();
                     throw new Error(error)
@@ -364,8 +365,8 @@ class ApplicationService{
                     const lService = new LogService()
         
                     await lService.createLog(ID,{
-                        Start : application.Start_Cuti,
-                        End : application.End_Cuti,
+                        Start : application.Start,
+                        End : application.End,
                         Message : `Pengajuan ${application.Application_Type} ditolak`,
                         Type : "Reject"
                     }, t)

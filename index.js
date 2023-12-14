@@ -12,6 +12,7 @@ const companyRouter = require('./router/companyRouter')
 const applicationRouter = require('./router/applicationRouter')
 const statusRouter = require('./router/status.Router')
 const logRouter = require('./router/logRouter')
+const notificationRouter = require('./router/notificationRouter')
 
 const port = process.env.PORT || 3001
 
@@ -26,6 +27,7 @@ app.use('/company' , companyRouter)
 app.use('/apply' , applicationRouter)
 app.use('/status', statusRouter)
 app.use('/logs', logRouter)
+app.use('/notif', notificationRouter)
 
 // Load Database Association
 require('./utils/db_associations')

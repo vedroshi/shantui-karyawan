@@ -158,8 +158,7 @@ class karyawanService {
                     as: 'Application',
                     where: {
                         [Op.or]: [
-                            { '$Application.Start_Cuti$': formatDate(new Date()) },
-                            { '$Application.Resign_Date$': formatDate(new Date()) },
+                            { '$Application.Start$': formatDate(new Date()) },
                         ],
                         '$Application.Application_Status$': 'Accepted',
                     },
@@ -169,22 +168,27 @@ class karyawanService {
 
                 const statusService = new StatusService()
                 for (const employee of karyawan){
-                    if(employee.Application.Start_Cuti && employee.Application.Start_Cuti === formatDate(new Date())){
+                
+                  if(employee.Application.Start === formatDate(new Date())){
+
+                    if(employee.Application.Application_Type == "Cuti"){
                         await statusService.setCuti(employee, t)
                         updatelog.push({
                           ID : employee.ID,
-                          Message : "This Employee takes a leave",
-                          Type : "Cuti"
+                          message : "This Employee takes a leave",
+                          type : "Cuti"
                         })
                     }
-                    if(employee.Application.Resign_Date && employee.Application.Resign_Date === formatDate(new Date())){
+
+                    else if(employee.Application.Application_Type == "Resign"){
                         await statusService.resign(employee, t)
                         updatelog.push({
                           ID : employee.ID,
-                          Message : "Employee Resign",
-                          Type : "Resign"
+                          message : "Employee Resign",
+                          type : "Resign"
                         })
                     }
+                  }
                 }
 
                 return updatelog
