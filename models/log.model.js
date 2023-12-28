@@ -2,7 +2,7 @@ const {sequelize} = require('../utils/db_connect')
 
 const {DataTypes} = require('sequelize')
 
-const LogModel = sequelize.define('Log' , {
+const logs = sequelize.define('Log' , {
     ID : {
         type : DataTypes.INTEGER,
         autoIncrement : true,
@@ -37,4 +37,4 @@ const LogModel = sequelize.define('Log' , {
     updatedAt : false,
 })
 
-module.exports = LogModel
+module.exports = logs

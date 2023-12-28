@@ -3,6 +3,8 @@ const statusService = require('../services/statusService')
 const notificationService = require('../services/notificationService')
 const karyawanService = require('../services/karyawanService')
 
+const logger = require('../utils/logger')
+
 
 // Execute Everyday at 00:00, 09:00 and 17:00 
 schedule.scheduleJob('0 0,10,17 * * *' , async ()=>{
@@ -42,6 +44,7 @@ schedule.scheduleJob('0 0,10,17 * * *' , async ()=>{
            warningEmployeeID.length ? employeeService.getKaryawanList(returnEmployeeID) : null,
         ])
         
+
         const addNotifications = async (karyawanList, message) =>{
             if (karyawanList){
                 for (const karyawan of karyawanList){
@@ -50,11 +53,14 @@ schedule.scheduleJob('0 0,10,17 * * *' , async ()=>{
             }
         }
 
+        // Add Notification
         await Promise.all([
             addNotifications(warningKaryawan, "Sudah mau jatuh tempo"),
             addNotifications(expiredKaryawan, "Sudah jatuh tempo"),
             addNotifications(returnKaryawan, "Balik Cuti")
         ])
+
+        logger.info("Status Updated")
 
         // Update Calendar
 

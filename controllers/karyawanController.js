@@ -44,6 +44,18 @@ class KaryawanController {
             next(error)
         })
     }
+
+    // get latest update
+    async getLatestUpdate(req, res, next){
+        const service = new karyawanService()
+
+        await service.getLatestUpdate()
+        .then((response)=>{
+            res.status(200).json(response)
+        }).catch((error)=>{
+            next(error)
+        })
+    }
 }
 
 module.exports = KaryawanController

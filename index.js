@@ -2,6 +2,8 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const {sequelize} = require('./utils/db_connect')
 const cors = require('cors')
+const expressWinston = require('express-winston')
+const logger = require('./utils/logger')
 
 require('dotenv').config()
 
@@ -13,6 +15,7 @@ const applicationRouter = require('./router/applicationRouter')
 const statusRouter = require('./router/status.Router')
 const logRouter = require('./router/logRouter')
 const notificationRouter = require('./router/notificationRouter')
+const calendarRouter = require('./router/calendarRouter')
 
 const port = process.env.PORT || 3001
 
@@ -21,6 +24,11 @@ app.use(bodyParser.json())
 //support parsing of application/x-www-form-urlencoded post data
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.use(expressWinston.logger({
+    winstonInstance : logger,
+    statuslevels : true
+}))
+
 app.use('/karyawan', karyawanRouter)
 app.use('/position', positionRouter)
 app.use('/company' , companyRouter)
@@ -28,6 +36,7 @@ app.use('/apply' , applicationRouter)
 app.use('/status', statusRouter)
 app.use('/logs', logRouter)
 app.use('/notif', notificationRouter)
+app.use('/calendar', calendarRouter)
 
 // Load Database Association
 require('./utils/db_associations')

@@ -1,4 +1,6 @@
 const applicationModel = require('../models/application.model')
+const karyawanModel = require('../models/karyawan.model')
+
 const { Op } = require('sequelize')
 
 const {getDateObj, displayDate, formatDate, revertDate} = require('../utils/utils')
@@ -6,6 +8,7 @@ const { sequelize } = require('../utils/db_connect')
 
 const StatusService = require('./statusService')
 const LogService = require('./logService')
+const CalendarService = require('./calendarService')
 
 class ApplicationService{
     // Add application when Karyawan is Added
@@ -166,6 +169,8 @@ class ApplicationService{
                 try{
                     const lService = new LogService()
                     const sService = new StatusService()
+                    const cService = new CalendarService()
+
                     const logUpdates = []
 
                     // Update Application Status in Database
@@ -185,8 +190,8 @@ class ApplicationService{
                     if(approved[0] === 0) {
                         throw new Error("Application not Found") 
                     }
-                    
-                    
+
+                    // Find Application
                     const application = await applicationModel.findOne({
                         where : {
                             EmployeeID : ID
@@ -206,9 +211,38 @@ class ApplicationService{
                     await lService.createLog(ID, acceptLog, t)
                     logUpdates.push(acceptLog)
 
+                    // Get the name to set it on the agenda (calendar)
+                    const karyawan = await karyawanModel.findOne({
+                        attributes : ['Name'],
+                        where : {
+                            ID : ID
+                        },
+                        limit : 1,
+                        transaction : t
+                    })
+
+                    // event Data to be added to Calendar
+
                     if(application.Application_Type == "Kompensasi"){
+
+
+                        // Add Events to Calendar (For Start and End)
+                        await cService.addEvent({
+                            Title : karyawan.Name,
+                            Start : application.Start,
+                            Tags : "Extend",
+                            Description : "Lanjut Kontrak",
+                        }, t)
+                        await cService.addEvent({
+                            Title : karyawan.Name,
+                            Start : application.End,
+                            Tags : "Expired",
+                            Description : "Jatuh Tempo",
+                        }, t)
+
                         // Check if the date is before today
                         if(getDateObj(application.Start) <= new Date()){
+                            // Update status
                             await sService.updateStatus(ID, "Active", application.Start, application.End, t)
                             
                             const extendLog =  {
@@ -221,7 +255,11 @@ class ApplicationService{
 
                             // Add Log (Client Log)
                             await lService.createLog(ID, extendLog, t)
+                            
+                            // Add Log (Server Log)
+                            logUpdates.push(extendLog)
 
+                            
                             const currentStatus = {
                                 Status : "Active",
                                 Start : application.Start,
@@ -229,10 +267,8 @@ class ApplicationService{
                                 message : "Status Changed to Active",
                             }
                             
-                            // Add Log (Server Log)
-                            logUpdates.push(extendLog)
-
                             await this.clearForm(ID, t)
+                            
                             return {
                                 status : "Accepted",
                                 currentStatus, 
@@ -243,6 +279,24 @@ class ApplicationService{
 
                     
                     if(application.Application_Type == "Cuti"){
+                        // console.log(karyawan.Name)
+                        await cService.addEvent({
+                            Title : karyawan.Name,
+                            Start : application.Start,
+                            Tags : "Cuti",
+                            Description : `Mulai Cuti ${application.Depart ? `dari ${application.Depart}` : ''} ${application.Arrival ? `ke ${application.Arrival}` : ''}`
+                        }, t)
+                        
+                        if(application.End){
+                            await cService.addEvent({
+                                Title : karyawan.Name,
+                                Start : application.End,
+                                Tags : "Return",
+                                Description : `Balik Cuti ${application.Arrival ? `dari ${application.Arrival}` : ''} ${application.Depart ? `ke ${application.Depart}` : ''}`
+                            }, t)
+                        }
+
+
                         // Check if the date is before today
                         if(getDateObj(application.Start) <= new Date()){
                             await sService.updateStatus(ID, application.Application_Type, application.Start, application.End, t)
@@ -288,6 +342,14 @@ class ApplicationService{
 
 
                     if(application.Application_Type == "Resign"){
+                        // Add Event to Calendar
+                        await cService.addEvent({
+                            Title : karyawan.Name,
+                            Start : application.Start,
+                            Tags : application.Application_Type,
+                            Description : "Resign"
+                        }, t)
+
                         if(getDateObj(application.Start) <= new Date()){
                             //update Status
                             await sService.updateStatus(ID, application.Application_Type, application.Start, t)
@@ -309,6 +371,8 @@ class ApplicationService{
                             }   
                          
                             await this.clearForm(ID, t)
+
+
                             return {
                                 status : "Accepted",
                                 currentStatus, 
@@ -338,6 +402,7 @@ class ApplicationService{
         try{
             const updated = sequelize.transaction(async (t)=>{
                 try{
+                    // Update Application Status
                     const rejected = await applicationModel.update({
                         Application_Status : "Rejected"
                     },{
@@ -355,6 +420,7 @@ class ApplicationService{
                         throw new Error("Application not Found") 
                     }
 
+                    // Find the Application Updated
                     const application = await applicationModel.findOne({
                         where : {
                             EmployeeID : ID
@@ -363,7 +429,7 @@ class ApplicationService{
                     })
 
                     const lService = new LogService()
-        
+
                     await lService.createLog(ID,{
                         Start : application.Start,
                         End : application.End,

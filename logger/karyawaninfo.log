@@ -1,0 +1,96 @@
+{ message: "Karyawan Added", level: 'info', timestamp: '2023-12-27T04:58:15.622Z' }
+{ message: "HTTP POST /karyawan/create", level: 'info', timestamp: '2023-12-27T04:58:15.799Z' }
+{ message: "HTTP GET /karyawan/", level: 'info', timestamp: '2023-12-27T04:58:19.224Z' }
+{ message: "HTTP GET /calendar/?start=2023-12-01&end=2024-01-01", level: 'info', timestamp: '2023-12-27T04:58:21.802Z' }
+{ message: "HTTP GET /calendar/?start=2024-01-01&end=2024-02-01", level: 'info', timestamp: '2023-12-27T04:58:23.325Z' }
+{ message: "HTTP GET /calendar/?start=2024-02-01&end=2024-03-01", level: 'info', timestamp: '2023-12-27T04:58:23.837Z' }
+{ message: "HTTP GET /calendar/?start=2024-01-01&end=2024-02-01", level: 'info', timestamp: '2023-12-27T04:58:24.512Z' }
+{ message: "HTTP GET /calendar/?start=2023-12-01&end=2024-01-01", level: 'info', timestamp: '2023-12-27T04:58:26.296Z' }
+{ message: "HTTP GET /calendar/?start=2023-11-01&end=2023-12-01", level: 'info', timestamp: '2023-12-27T04:58:26.679Z' }
+{ message: "HTTP GET /calendar/?start=2023-10-01&end=2023-11-01", level: 'info', timestamp: '2023-12-27T04:58:27.009Z' }
+{ message: "HTTP GET /calendar/?start=2023-09-01&end=2023-10-01", level: 'info', timestamp: '2023-12-27T04:58:27.342Z' }
+{ message: "HTTP GET /calendar/?start=2023-08-01&end=2023-09-01", level: 'info', timestamp: '2023-12-27T04:58:27.755Z' }
+{ message: "HTTP GET /calendar/?start=2023-07-01&end=2023-08-01", level: 'info', timestamp: '2023-12-27T04:58:28.029Z' }
+{ message: "HTTP GET /calendar/?start=2023-06-01&end=2023-07-01", level: 'info', timestamp: '2023-12-27T04:58:28.441Z' }
+{ message: "HTTP GET /calendar/?start=2023-07-01&end=2023-08-01", level: 'info', timestamp: '2023-12-27T04:58:29.117Z' }
+{ message: "HTTP GET /karyawan/", level: 'info', timestamp: '2023-12-27T04:58:58.884Z' }
+{ message: "HTTP GET /karyawan/getKTP/9127420132913211%20-%20Budi.jpg", level: 'info', timestamp: '2023-12-27T04:59:00.805Z' }
+{ message: "HTTP GET /notif/", level: 'info', timestamp: '2023-12-27T05:02:26.409Z' }
+{ message: "HTTP GET /karyawan/", level: 'info', timestamp: '2023-12-27T05:02:26.974Z' }
+{ message: "Karyawan Added", level: 'info', timestamp: '2023-12-27T06:04:14.365Z' }
+{ message: "HTTP POST /karyawan/create", level: 'info', timestamp: '2023-12-27T06:04:14.505Z' }
+{ message: "HTTP GET /karyawan/", level: 'info', timestamp: '2023-12-27T06:06:08.133Z' }
+{ message: "HTTP GET /calendar/?start=2023-12-01&end=2024-01-01", level: 'info', timestamp: '2023-12-27T06:06:13.033Z' }
+{ message: "HTTP GET /calendar/?start=2024-01-01&end=2024-02-01", level: 'info', timestamp: '2023-12-27T06:06:14.585Z' }
+{ message: "HTTP GET /calendar/?start=2023-12-01&end=2024-01-01", level: 'info', timestamp: '2023-12-27T06:06:16.963Z' }
+{ message: "HTTP GET /calendar/?start=2023-11-01&end=2023-12-01", level: 'info', timestamp: '2023-12-27T06:06:17.544Z' }
+{ message: "HTTP GET /calendar/?start=2023-12-01&end=2024-01-01", level: 'info', timestamp: '2023-12-27T06:06:18.279Z' }
+{ message: "HTTP GET /calendar/?start=2024-01-01&end=2024-02-01", level: 'info', timestamp: '2023-12-27T06:06:18.882Z' }
+{ message: "HTTP GET /karyawan/", level: 'info', timestamp: '2023-12-27T06:12:16.651Z' }
+{ message: "Incorrect date value: 'Invalid date' for column 'Join_Date' at row 1", level: 'error', timestamp: '2023-12-27T06:13:10.589Z' }
+{ message: "HTTP POST /karyawan/create", level: 'info', timestamp: '2023-12-27T06:13:10.620Z' }
+{ message: "Karyawan Added", level: 'info', timestamp: '2023-12-27T06:13:40.568Z' }
+{ message: "HTTP POST /karyawan/create", level: 'info', timestamp: '2023-12-27T06:13:40.607Z' }
+{ message: "HTTP GET /karyawan/", level: 'info', timestamp: '2023-12-27T06:13:47.370Z' }
+{ message: "HTTP GET /karyawan/getKTP/1239721412392123%20-%20Dedik.jpg", level: 'info', timestamp: '2023-12-27T06:13:53.141Z' }
+{ message: "HTTP GET /karyawan/", level: 'info', timestamp: '2023-12-27T06:14:03.694Z' }
+{ message: "HTTP GET /calendar/?start=2023-12-01&end=2024-01-01", level: 'info', timestamp: '2023-12-27T06:14:14.112Z' }
+{ message: "HTTP GET /calendar/?start=2024-01-01&end=2024-02-01", level: 'info', timestamp: '2023-12-27T06:14:29.872Z' }
+{ message: "HTTP GET /calendar/?start=2023-12-01&end=2024-01-01", level: 'info', timestamp: '2023-12-27T06:14:31.998Z' }
+{ message: "HTTP GET /karyawan/", level: 'info', timestamp: '2023-12-27T06:14:35.348Z' }
+{ message: "HTTP GET /karyawan/getKTP/1239721412392123%20-%20Dedik.jpg", level: 'info', timestamp: '2023-12-27T06:15:17.542Z' }
+{ message: "HTTP GET /karyawan/getKTP/1491392139291923%20-%20Budi.jpg", level: 'info', timestamp: '2023-12-27T06:15:19.841Z' }
+{ message: "HTTP GET /karyawan/getKTP/1239721412392123%20-%20Dedik.jpg", level: 'info', timestamp: '2023-12-27T06:40:52.950Z' }
+{ message: "HTTP GET /karyawan/getKTP/1491392139291923%20-%20Budi.jpg", level: 'info', timestamp: '2023-12-27T06:43:05.083Z' }
+{ message: "HTTP GET /karyawan/getKTP/1491392139291923%20-%20Budi.jpg", level: 'info', timestamp: '2023-12-27T06:43:21.110Z' }
+{ message: "HTTP GET /favicon.ico", level: 'info', timestamp: '2023-12-27T06:43:22.080Z' }
+{ message: "HTTP GET /karyawan/getKTP/1491392139291923%20-%20Budi.jpg", level: 'info', timestamp: '2023-12-27T07:31:14.323Z' }
+{ message: "HTTP GET /karyawan/getKTP/1239721412392123%20-%20Dedik.jpg", level: 'info', timestamp: '2023-12-27T07:31:56.694Z' }
+{ message: "HTTP GET /calendar/?start=2023-12-01&end=2024-01-01", level: 'info', timestamp: '2023-12-27T07:32:01.445Z' }
+{ message: "HTTP GET /karyawan/latestupdate", level: 'info', timestamp: '2023-12-27T07:32:03.801Z' }
+{ message: "HTTP GET /karyawan/", level: 'info', timestamp: '2023-12-27T07:32:05.893Z' }
+{ message: "HTTP GET /karyawan/getKTP/1491392139291923%20-%20Budi.jpg", level: 'info', timestamp: '2023-12-27T07:34:04.031Z' }
+{ message: "HTTP GET /calendar/?start=2023-12-01&end=2024-01-01", level: 'info', timestamp: '2023-12-27T07:36:52.427Z' }
+{ message: "HTTP GET /calendar/?start=2024-01-01&end=2024-02-01", level: 'info', timestamp: '2023-12-27T07:37:11.639Z' }
+{ message: "HTTP GET /calendar/?start=2023-12-01&end=2024-01-01", level: 'info', timestamp: '2023-12-27T07:37:15.620Z' }
+{ message: "HTTP GET /calendar/?start=2023-11-01&end=2023-12-01", level: 'info', timestamp: '2023-12-27T07:37:20.292Z' }
+{ message: "HTTP GET /calendar/?start=2023-10-01&end=2023-11-01", level: 'info', timestamp: '2023-12-27T07:37:20.751Z' }
+{ message: "HTTP GET /calendar/?start=2023-09-01&end=2023-10-01", level: 'info', timestamp: '2023-12-27T07:37:21.674Z' }
+{ message: "HTTP GET /calendar/?start=2023-08-01&end=2023-09-01", level: 'info', timestamp: '2023-12-27T07:37:22.777Z' }
+{ message: "HTTP GET /calendar/?start=2023-07-01&end=2023-08-01", level: 'info', timestamp: '2023-12-27T07:37:23.980Z' }
+{ message: "HTTP GET /calendar/?start=2024-07-01&end=2024-08-01", level: 'info', timestamp: '2023-12-27T07:37:27.972Z' }
+{ message: "HTTP GET /calendar/?start=2023-07-01&end=2023-08-01", level: 'info', timestamp: '2023-12-27T07:37:29.511Z' }
+{ message: "HTTP GET /calendar/?start=2023-08-01&end=2023-09-01", level: 'info', timestamp: '2023-12-27T07:37:30.471Z' }
+{ message: "HTTP GET /calendar/?start=2023-09-01&end=2023-10-01", level: 'info', timestamp: '2023-12-27T07:37:30.756Z' }
+{ message: "HTTP GET /calendar/?start=2023-10-01&end=2023-11-01", level: 'info', timestamp: '2023-12-27T07:37:31.102Z' }
+{ message: "HTTP GET /calendar/?start=2023-11-01&end=2023-12-01", level: 'info', timestamp: '2023-12-27T07:37:31.287Z' }
+{ message: "HTTP GET /calendar/?start=2023-12-01&end=2024-01-01", level: 'info', timestamp: '2023-12-27T07:37:31.497Z' }
+{ message: "HTTP GET /karyawan/", level: 'info', timestamp: '2023-12-27T07:37:39.500Z' }
+{ message: "HTTP GET /karyawan/getKTP/1239721412392123%20-%20Dedik.jpg", level: 'info', timestamp: '2023-12-27T07:37:41.237Z' }
+{ message: "HTTP GET /karyawan/getKTP/1491392139291923%20-%20Budi.jpg", level: 'info', timestamp: '2023-12-27T07:39:22.900Z' }
+{ message: "Karyawan Added", level: 'info', timestamp: '2023-12-27T07:48:33.532Z' }
+{ message: "HTTP POST /karyawan/create", level: 'info', timestamp: '2023-12-27T07:48:33.569Z' }
+{ message: "HTTP GET /karyawan/", level: 'info', timestamp: '2023-12-27T07:48:36.186Z' }
+{ message: "HTTP GET /calendar/?start=2023-12-01&end=2024-01-01", level: 'info', timestamp: '2023-12-27T07:48:40.910Z' }
+{ message: "HTTP GET /karyawan/", level: 'info', timestamp: '2023-12-27T07:48:43.350Z' }
+{ message: "HTTP GET /karyawan/latestupdate", level: 'info', timestamp: '2023-12-27T07:52:00.761Z' }
+{ message: "HTTP GET /karyawan/", level: 'info', timestamp: '2023-12-27T07:52:02.381Z' }
+{ message: "HTTP GET /karyawan/getKTP/9765445467778000%20-%20Besse.png", level: 'info', timestamp: '2023-12-27T07:52:09.945Z' }
+{ message: "Karyawan Added", level: 'info', timestamp: '2023-12-27T07:53:26.586Z' }
+{ message: "HTTP POST /karyawan/create", level: 'info', timestamp: '2023-12-27T07:53:26.621Z' }
+{ message: "HTTP GET /karyawan/", level: 'info', timestamp: '2023-12-27T07:53:28.305Z' }
+{ message: "HTTP GET /karyawan/getKTP/0481321392013912%20-%20Asrul.jpg", level: 'info', timestamp: '2023-12-27T07:53:30.747Z' }
+{ message: "HTTP POST /apply/4", level: 'info', timestamp: '2023-12-27T07:53:50.328Z' }
+{ message: "HTTP GET /karyawan/", level: 'info', timestamp: '2023-12-27T07:53:51.470Z' }
+{ message: "HTTP PATCH /apply/approve/4", level: 'info', timestamp: '2023-12-27T07:53:54.143Z' }
+{ message: "HTTP GET /karyawan/getKTP/9765445467778000%20-%20Besse.png", level: 'info', timestamp: '2023-12-27T07:54:30.719Z' }
+{ message: "Karyawan Added", level: 'info', timestamp: '2023-12-27T08:10:13.558Z' }
+{ message: "HTTP POST /karyawan/create", level: 'info', timestamp: '2023-12-27T08:10:13.626Z' }
+{ message: "HTTP GET /karyawan/", level: 'info', timestamp: '2023-12-27T08:10:15.482Z' }
+{ message: "Karyawan Added", level: 'info', timestamp: '2023-12-27T08:11:24.468Z' }
+{ message: "HTTP POST /karyawan/create", level: 'info', timestamp: '2023-12-27T08:11:24.746Z' }
+{ message: "HTTP GET /karyawan/", level: 'info', timestamp: '2023-12-27T08:11:26.688Z' }
+{ message: "HTTP GET /karyawan/getKTP/1491392139291923%20-%20Budi.jpg", level: 'info', timestamp: '2023-12-27T08:11:46.269Z' }
+{ message: "HTTP GET /notif/", level: 'info', timestamp: '2023-12-28T02:08:22.092Z' }
+{ message: "HTTP GET /karyawan/latestupdate", level: 'info', timestamp: '2023-12-28T02:08:23.125Z' }
+{ message: "HTTP GET /karyawan/", level: 'info', timestamp: '2023-12-28T02:09:36.462Z' }

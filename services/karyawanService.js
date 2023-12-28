@@ -8,7 +8,8 @@ const companyService = require("./companyService");
 const StatusService = require("./statusService");
 const LogService = require("./logService");
 const ApplicationService = require("./applicationService");
-
+const CalendarService = require("./calendarService")
+const ContractService = require("./contractService");
 
 const positionModel = require("../models/position.model");
 const statusModel = require("../models/status.model");
@@ -16,7 +17,10 @@ const companyModel = require("../models/company.model");
 const siteModel = require("../models/site.model");
 const applicationModel = require("../models/application.model");
 const logModel = require('../models/log.model');
+
 const { Op } = require("sequelize");
+
+const logger = require('../utils/logger');
 
 
 class karyawanService {
@@ -34,10 +38,14 @@ class karyawanService {
           const sService = new StatusService();
           const appService = new ApplicationService();
           const lService = new LogService()
+          const calendarService = new CalendarService();
+          const contractService = new ContractService();
 
+          // Add Position and Company they are assigned to
           const position = await pService.upsertPosition(positionData, t);
           const company = await cService.upsertCompany(companyData, t);
 
+          // Add Employee
           const karyawan = await karyawanModel.create({
             NIK: data.NIK,
             Name: data.Name,
@@ -51,9 +59,29 @@ class karyawanService {
             KTP : KTP.name || KTP.filename
           }, {transaction : t});
 
+
           if(karyawan){
-            await sService.addStatus(karyawan, t);
+            // Create Status and Application
+            const newStatus = await sService.addStatus(karyawan, t);
             await appService.addApplication(karyawan.ID, t);
+            // Create Contract
+            await contractService.addContract(karyawan.ID, newStatus.Start, newStatus.End, t)
+
+            // Create Event to Calendar Agenda
+            // Start Date
+            await calendarService.addEvent({
+              Title : data.Name,
+              Tags : "Join",
+              Description : "Masuk Kerja",
+              Start : data.Join_Date
+            }, t)
+            // End Date
+            await calendarService.addEvent({
+              Title : data.Name,
+              Tags : "Expired",
+              Description : "Jatuh Tempo Kontrak",
+              Start : getDateObj(data.Join_Date).setMonth(getDateObj(data.Join_Date).getMonth() + 6)
+            }, t)
             
             // Log
             const logData  = {
@@ -62,12 +90,16 @@ class karyawanService {
               Type : "Contract",
               Message : `Masuk Kerja di tanggal ${displayDate(getDateObj(data.Join_Date))}`
             }
+            // Add Log
             await lService.createLog(karyawan.ID, logData, t)
           }
 
+          logger.info("Karyawan Added")
           return karyawan;
+
         } catch (error) {
-            
+
+          logger.error(error)
           await t.rollback();
           // Check if the error is a SequelizeUniqueConstraintError
           if (error.name === "SequelizeUniqueConstraintError") {
@@ -156,10 +188,11 @@ class karyawanService {
                   include: [{
                     model: applicationModel,
                     as: 'Application',
-                    where: {
-                        [Op.or]: [
-                            { '$Application.Start$': formatDate(new Date()) },
-                        ],
+                    where: { 
+                        '$Application.Start$': {
+                          [Op.lte] : formatDate(new Date())
+                        } ,
+                    
                         '$Application.Application_Status$': 'Accepted',
                     },
                 }],
@@ -169,8 +202,8 @@ class karyawanService {
                 const statusService = new StatusService()
                 for (const employee of karyawan){
                 
-                  if(employee.Application.Start === formatDate(new Date())){
-
+                  // Set Status and Add Log
+                  if(employee.Application.Start <= formatDate(new Date())){
                     if(employee.Application.Application_Type == "Cuti"){
                         await statusService.setCuti(employee, t)
                         updatelog.push({
@@ -190,16 +223,49 @@ class karyawanService {
                     }
                   }
                 }
-
+                logger.info(updatelog)
                 return updatelog
             }catch(error){
                 t.rollback()
+                logger.error(error)
                 throw new Error(error)
             }
         })
         return transaction
     }catch(error){
         throw error
+    }
+  }
+
+  //get karyawan with the latest update
+  async getLatestUpdate(){
+    try{
+      const karyawan = karyawanModel.findAll({
+        include : [{
+          model : statusModel,
+          as : "Status",
+        }, {
+          model : applicationModel,
+          as : "Application"
+        },  {
+          model: companyModel,
+          as: 'Company',
+          attributes : {
+            exclude : ['SiteID']
+          },
+          include : [{
+            model : siteModel
+          }]
+        },{
+          model : positionModel,
+          as : "Position"
+        }],
+        order: [[{ model: statusModel, as: 'Status' }, 'updatedAt', 'DESC']],
+        limit : 10
+      })
+      return karyawan
+    }catch(error){
+      throw new Error(error)
     }
   }
 }

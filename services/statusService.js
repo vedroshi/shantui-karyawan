@@ -3,10 +3,12 @@ const applicationModel = require('../models/application.model')
 const karyawanModel = require('../models/karyawan.model')
 
 const {getDateObj, formatDate, displayDate} = require('../utils/utils')
+const {sequelize} = require('../utils/db_connect')
 const { Op } = require('sequelize')
 
-const {sequelize} = require('../utils/db_connect')
 const LogService = require('./logService')
+const CalendarService = require('./calendarService')
+const ContractService = require('./contractService')
 
 
 class StatusService {
@@ -240,13 +242,16 @@ class StatusService {
         try{
             const transaction = sequelize.transaction(async(t)=>{
                 const logService = new LogService()
+                const contractService = new ContractService()
                 const updateLog = []
                 try{
                     // Find All Employee with today as the end of "Cuti"
                     const karyawan = await statusModel.findAll({
                         where : {
                             Status : "Cuti",
-                            End : new Date()
+                            End : {
+                                [Op.lte] : new Date(),
+                            }
                         },
                         transaction : t
                     })
@@ -271,9 +276,11 @@ class StatusService {
                             const start_contract = getDateObj(employee.End)
                             const end_contract = new Date(start_contract)
                             end_contract.setMonth(end_contract.getMonth() + 6)
-                           
+                            
                             // Create new Contract
                             await this.updateStatus(employee.EmployeeID, "Active", formatDate(start_contract), formatDate(end_contract), t)
+
+                            await contractService.addContract(employee.EmployeeID, formatDate(start_contract), formatDate(end_contract), t)
 
                             await logService.createLog(employee.EmployeeID,{
                                 CreatedAt : formatDate(new Date()),
@@ -314,9 +321,15 @@ class StatusService {
 
     async extendContract(employee, t=null){
         const logService = new LogService()
+        const contractService = new ContractService()
 
+        // Update Status
         this.updateStatus(employee.ID, "Active", employee.Application.Start,  employee.Application.End, t=t)
+
+        // Create New Contract
+        await contractService.addContract(employee.ID, employee.Application.Start,  employee.Application.End, t=t)
         
+        // Create Log (Client)
         await logService.createLog(employee.ID, {
             CreatedAt : formatDate(new Date()),
             Start : employee.Application.Start,
@@ -325,6 +338,7 @@ class StatusService {
             Message : `Lanjut Kontrak`
         }, t)
 
+        // Clear Application
         await applicationModel.update({
             Application_Type : null,
             Application_Status : null,
@@ -376,17 +390,60 @@ class StatusService {
 
     async setEndCuti(ID, data){
     try{
-        const changes = await statusModel.update({
-            End : data.Date,
-        },{
-            where : {
-                EmployeeID : ID,
-                Status : 'Cuti'
+        const calendarService = new CalendarService()
+        const transaction = await sequelize.transaction(async (t)=>{
+            try{
+
+                // check if there is a agenda in the calendar
+                const karyawan = await karyawanModel.findOne({
+                    attributes : ['Name'],
+                    include : [{
+                        model : statusModel,
+                        as : "Status",
+                        attributes : ['Start', 'End']
+                    }],
+                    where : {
+                        ID : ID
+                    },
+                    transaction : t
+                })
+
+                const agendaData = {
+                    Title : karyawan.Name,
+                    Start : karyawan.Status.End,
+                    Tags : "Return",
+                    Description : "Balik Cuti"
+                }
+
+                const agenda = await calendarService.findEvent(agendaData, t)
+                
+                // Update the date
+                agendaData.Start = data.Date     
+
+                if(agenda){
+                    await calendarService.updateEvent(agenda.ID, agendaData, t)
+                }else{
+                    await calendarService.addEvent(agendaData, t)
+                }
+                
+                const changes = await statusModel.update({
+                    End : data.Date,
+                },{
+                    where : {
+                        EmployeeID : ID,
+                        Status : 'Cuti'
+                    },
+                    transaction : t
+                })                
+                
+                return changes
+            }catch(error){
+                throw error
             }
         })
-            return changes
+        return transaction
         } catch(error){
-            throw new Error(error)
+            throw error
         }
     }
 
@@ -402,17 +459,28 @@ class StatusService {
         }, t)
     }
 
-    async cutOff(ID, date, t=null){
+    async cutOff(employee, date, t=null){
         try{
             const logService = new LogService()
+            const calendarService = new CalendarService()
+
+            const changes = await this.updateStatus(employee.ID, "Cut Off", date, null, t=t)
             
-            const changes = await this.updateStatus(ID, "Cut Off", date, null, t=t)
-            
-            await logService.createLog(ID, {
+            // Add Log
+            await logService.createLog(employee.ID, {
                 Start : formatDate(date),
                 Type : "Cut Off",
                 Message : `Cut Off tanggal ${displayDate(date)}`
             }, t)
+
+            // Add Events to Calendar
+            await calendarService.addEvent({
+                Title : employee.Name,
+                Start : formatDate(date),
+                Tags : 'Cut Off',
+                Description : "Cut Off"
+            },t)
+            
 
             // Emptying the Application
             await applicationModel.update({
@@ -424,7 +492,7 @@ class StatusService {
                 Depart : null,
             },{
                 where :  {
-                    EmployeeID : ID
+                    EmployeeID : employee.ID
                 },
                 transaction : t
             })

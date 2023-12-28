@@ -7,7 +7,8 @@ const logModel = require('../models/log.model')
 const applicationModel = require('../models/application.model')
 const LogModel = require('../models/log.model')
 const notificationModel = require('../models/notification.model')
-
+const calendarModel = require('../models/calendar.model')
+const contractsModel = require('../models/contracts.model')
 
 // Karyawan
 karyawanModel.belongsTo(positionModel)
@@ -23,6 +24,10 @@ karyawanModel.hasMany(LogModel, {
     foreignKey : 'EmployeeID'
 })
 
+karyawanModel.hasMany(contractsModel, {
+    foreignKey : 'EmployeeID'
+})
+
 // Position
 positionModel.hasMany(karyawanModel, {
     foreignKey : "PositionID"
@@ -32,6 +37,7 @@ positionModel.hasMany(karyawanModel, {
 statusModel.belongsTo(karyawanModel, {
     foreignKey : 'EmployeeID'
 })
+
 
 // Site
 SiteModel.hasMany(companyModel, {
