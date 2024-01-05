@@ -9,6 +9,8 @@ const LogModel = require('../models/log.model')
 const notificationModel = require('../models/notification.model')
 const calendarModel = require('../models/calendar.model')
 const contractsModel = require('../models/contracts.model')
+const positionListModel = require('../models/positionlist.model')
+const salaryModel = require('../models/salary.model')
 
 // Karyawan
 karyawanModel.belongsTo(positionModel)
@@ -60,3 +62,8 @@ logModel.belongsTo(karyawanModel, {
     foreignKey : "EmployeeID"
 })
 
+// PositionList
+positionListModel.hasMany(salaryModel, {
+    foreignKey : 'PositionListID',
+    onDelete : 'NO ACTION'
+})

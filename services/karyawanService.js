@@ -268,6 +268,8 @@ class karyawanService {
       throw new Error(error)
     }
   }
+
+ 
 }
 
 module.exports = karyawanService;
