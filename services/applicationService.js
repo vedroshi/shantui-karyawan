@@ -213,7 +213,7 @@ class ApplicationService{
 
                     // Get the name to set it on the agenda (calendar)
                     const karyawan = await karyawanModel.findOne({
-                        attributes : ['Name'],
+                        attributes : ['ID', 'Name'],
                         where : {
                             ID : ID
                         },
@@ -224,7 +224,6 @@ class ApplicationService{
                     // event Data to be added to Calendar
 
                     if(application.Application_Type == "Kompensasi"){
-
 
                         // Add Events to Calendar (For Start and End)
                         await cService.addEvent({
@@ -243,7 +242,8 @@ class ApplicationService{
                         // Check if the date is before today
                         if(getDateObj(application.Start) <= new Date()){
                             // Update status
-                            await sService.updateStatus(ID, "Active", application.Start, application.End, t)
+                            // Extend Contract
+                            await sService.extendContract(karyawan.ID, t)
                             
                             const extendLog =  {
                                 CreatedAt : formatDate(new Date()),

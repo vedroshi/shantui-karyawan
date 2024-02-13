@@ -35,6 +35,20 @@ class notificationController{
             next(error)
         })
     }
+
+    async readAllNotification(req, res, next){
+        const service = new notificationService()
+
+        await service.readAllNotification()
+        .then((response)=>{
+            res.status(200).json({
+                Status : "Success",
+                Message : "All Notification Read"
+            })
+        }).catch((error)=>{
+            next(error)
+        })
+    }
 }
 
 module.exports = notificationController

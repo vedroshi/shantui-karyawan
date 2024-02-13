@@ -8,6 +8,7 @@ const controller = new notificationController()
 
 router.get('/', controller.getNotifications)
 router.patch('/read/:id', controller.readNotification)
+router.patch('/readall', controller.readAllNotification)
 
 router.post('/create' , controller.addNotification)
 

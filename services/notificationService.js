@@ -47,6 +47,21 @@ class notificationService{
             throw new Error(error)
         }
     }
+
+    // Read All Notification
+    async readAllNotification(){
+        try{
+            await notificationModel.update({
+                IsRead : 1
+            }, {
+                where : {
+                    IsRead : 0
+                }
+            })
+        }catch(error){
+            throw new Error(error)
+        }
+    }
 }
 
 module.exports = notificationService

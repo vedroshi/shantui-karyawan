@@ -78,11 +78,13 @@ class contractService {
             try {
 
                 const contract = await this.findContract(ID, t)
+
                 const options = {
                     year : 'numeric',
                     month : 'long',
                     day : '2-digit'
                 }
+
                 const start = new Date(contract.Start)
                 const end = new Date(contract.End)
 
@@ -162,7 +164,6 @@ class contractService {
                     }
                 }
                 
-            
                 const contractPath = path.join(__dirname, `../contracts/${start.toLocaleDateString('en-EN', {month : 'long'})} ${start.getFullYear()}`)
                 const fileName = `PKWT - ${dataRender.Name}.docx`
 
