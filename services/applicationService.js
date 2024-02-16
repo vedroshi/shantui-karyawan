@@ -90,7 +90,7 @@ class ApplicationService{
                           break;
                         case "Resign":
                           logData.Start = form.Start;
-                          logData.Message = `Ajukan Resign tanggal ${logData.Start}`;
+                          logData.Message = `Ajukan Resign tanggal ${displayDate(logData.Start)}`;
                           break;
                     }
 
@@ -352,7 +352,7 @@ class ApplicationService{
 
                         if(getDateObj(application.Start) <= new Date()){
                             //update Status
-                            await sService.updateStatus(ID, application.Application_Type, application.Start, t)
+                            await sService.updateStatus(ID, application.Application_Type, application.Start, null, t)
                             const resignLog = {
                                 CreatedAt :  formatDate(new Date()),
                                 Start : application.Start,

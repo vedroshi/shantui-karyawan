@@ -318,8 +318,6 @@ class StatusService {
         // Convert Date into String
         const start = formatDate(newContractStart)
         const end = formatDate(newContractEnd)
-        
-        console.log(start, end)
 
         // Update Status
         this.updateStatus(ID, "Active", start, end, t = t)
@@ -457,47 +455,59 @@ class StatusService {
         }, t)
     }
 
-    async cutOff(employee, date, t = null) {
+    async cutOff(ID, date, t = null) {
         try {
             const logService = new LogService()
             const calendarService = new CalendarService()
-
-            const changes = await this.updateStatus(employee.ID, "Cut Off", date, null, t = t)
-
-            // Add Log
-            await logService.createLog(employee.ID, {
-                Start: formatDate(date),
-                Type: "Cut Off",
-                Message: `Cut Off tanggal ${displayDate(date)}`
-            }, t)
-
-            // Add Events to Calendar
-            await calendarService.addEvent({
-                Title: employee.Name,
-                Start: formatDate(date),
-                Tags: 'Cut Off',
-                Description: "Cut Off"
-            }, t)
-
-
-            // Emptying the Application
-            await applicationModel.update({
-                Application_Type: null,
-                Application_Status: null,
-                Start: null,
-                End: null,
-                Arrival: null,
-                Depart: null,
-            }, {
-                where: {
-                    EmployeeID: employee.ID
-                },
-                transaction: t
+            
+            const transaction = sequelize.transaction(async(t) =>{
+                const karyawan = await karyawanModel.findOne({
+                    attributes : ['Name'],
+                    where : {
+                        ID : ID
+                    },
+                    transaction : t
+                })
+    
+                const changes = await this.updateStatus(ID, "Cut Off", date, null, t = t)
+    
+                // Add Log
+                await logService.createLog(ID, {
+                    Start: formatDate(date),
+                    Type: "Cut Off",
+                    Message: `Cut Off tanggal ${displayDate(date)}`
+                }, t)
+    
+                // Add Events to Calendar
+                await calendarService.addEvent({
+                    Title: karyawan.Name,
+                    Start: formatDate(date),
+                    Tags: 'Cut Off',
+                    Description: "Cut Off"
+                }, t)
+    
+    
+                // Emptying the Application
+                await applicationModel.update({
+                    Application_Type: null,
+                    Application_Status: null,
+                    Start: null,
+                    End: null,
+                    Arrival: null,
+                    Depart: null,
+                }, {
+                    where: {
+                        EmployeeID: ID
+                    },
+                    transaction: t
+                })
+    
+                return changes
             })
 
-            return changes
+            return transaction
         } catch (error) {
-            throw new Error(error)
+            throw error
         }
     }
 }
