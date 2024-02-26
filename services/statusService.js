@@ -158,7 +158,7 @@ class StatusService {
                                 continue
                             }
 
-                            if (application.Application_Status === "Rejected") {
+                            if (application.Application_Status === "Rejected" ) {
                                 await this.cutOff(employee.ID, new Date(), t)
                                 updateLog.push({
                                     ID: employee.ID,
@@ -185,7 +185,7 @@ class StatusService {
                                         message: "This Employee takes a Leave",
                                         type: "Cuti"
                                     });
-                                } else if (application.Application_Type === "Resign" && getDateObj(application.Start) <= new Date) {
+                                } else if (application.Application_Type === "Resign" && getDateObj(application.Start) <= new Date()) {
                                     await this.resign(employee, t);
                                     updateLog.push({
                                         ID: employee.ID,
@@ -193,7 +193,10 @@ class StatusService {
                                         type: "Resign"
                                     });
                                 }else{
-                                    await this.setCloseProject(employee.ID, status.Start, status.End, t);
+                                    if(status.Status != "Close Project"){
+                                        await this.setCloseProject(employee.ID, status.Start, status.End, t);
+                                    }
+                                    continue
                                 }
                             }else {
                                 await this.setCloseProject(employee.ID, status.Start, status.End, t);
@@ -262,7 +265,7 @@ class StatusService {
                             // Create new Contract
                             await this.updateStatus(employee.EmployeeID, "Active", formatDate(start_contract), formatDate(end_contract), t)
 
-                            await contractService.addContract(employee.EmployeeID, formatDate(start_contract), formatDate(end_contract), t)
+                            // await contractService.addContract(employee.EmployeeID, formatDate(start_contract), formatDate(end_contract), t)
 
                             await logService.createLog(employee.EmployeeID, {
                                 CreatedAt: formatDate(new Date()),
@@ -445,8 +448,12 @@ class StatusService {
 
     async resign(employee, t = null) {
         const logService = new LogService()
+        const calendarService = new CalendarService()
 
         await this.updateStatus(employee.ID, "Resign", employee.Application.Start, null, t = t)
+
+        // Remove Calendar Events
+        await calendarService.deleteEvents(employee.Name, employee.Application.Start, t)
 
         await logService.createLog(employee.ID, {
             Start: employee.Application.Start,
@@ -502,6 +509,9 @@ class StatusService {
                     transaction: t
                 })
     
+                // Remove Calendar Events
+                await calendarService.deleteEvents(karyawan.Name, date, t)
+
                 return changes
             })
 

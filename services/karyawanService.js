@@ -39,7 +39,7 @@ class karyawanService {
           const appService = new ApplicationService();
           const lService = new LogService()
           const calendarService = new CalendarService();
-          const contractService = new ContractService();
+          // const contractService = new ContractService();
 
           // Add Position and Company they are assigned to
           const position = await pService.upsertPosition(positionData, t);
@@ -65,7 +65,7 @@ class karyawanService {
             const newStatus = await sService.addStatus(karyawan, t);
             await appService.addApplication(karyawan.ID, t);
             // Create Contract
-            await contractService.addContract(karyawan.ID, newStatus.Start, newStatus.End, t)
+            // await contractService.addContract(karyawan.ID, newStatus.Start, newStatus.End, t)
 
             // Create Event to Calendar Agenda
             // Start Date
@@ -201,27 +201,26 @@ class karyawanService {
 
                 const statusService = new StatusService()
                 for (const employee of karyawan){
-                
+                  
                   // Set Status and Add Log
-                  if(employee.Application.Start <= formatDate(new Date())){
-                    if(employee.Application.Application_Type == "Cuti"){
-                        await statusService.setCuti(employee, t)
-                        updatelog.push({
-                          ID : employee.ID,
-                          message : "This Employee takes a leave",
-                          type : "Cuti"
-                        })
-                    }
-
-                    else if(employee.Application.Application_Type == "Resign"){
-                        await statusService.resign(employee, t)
-                        updatelog.push({
-                          ID : employee.ID,
-                          message : "Employee Resign",
-                          type : "Resign"
-                        })
-                    }
+                  if(employee.Application.Application_Type == "Cuti"){
+                      await statusService.setCuti(employee, t)
+                      updatelog.push({
+                        ID : employee.ID,
+                        message : "This Employee takes a leave",
+                        type : "Cuti"
+                      })
                   }
+
+                  else if(employee.Application.Application_Type == "Resign"){
+                      await statusService.resign(employee, t)
+                      updatelog.push({
+                        ID : employee.ID,
+                        message : "Employee Resign",
+                        type : "Resign"
+                      })
+                  }
+                  
                 }
                 logger.info(updatelog)
                 return updatelog

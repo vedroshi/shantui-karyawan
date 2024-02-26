@@ -1,8 +1,6 @@
 const { sequelize } = require('../utils/db_connect')
 const { Op } = require('sequelize')
 const fs = require('fs')
-const http = require('http')
-const https = require('https')
 const path = require('path')
 const docsInit = require('../utils/docs_connect')
 
@@ -11,9 +9,9 @@ const statusModel = require('../models/status.model')
 const karyawanModel = require('../models/karyawan.model')
 const positionModel = require('../models/position.model')
 
-
 const PositionService = require('./positionService')
 const SalaryService = require('./salaryService')
+const { getDateObj } = require('../utils/utils')
 
 class contractService {
 
@@ -77,7 +75,19 @@ class contractService {
         const transaction = await sequelize.transaction(async (t)=>{
             try {
 
-                const contract = await this.findContract(ID, t)
+                let contract = await this.findContract(ID, t)
+                const status = await statusModel.findOne({
+                    attributes : ['Start', "End"],
+                    where : {
+                        EmployeeID : ID
+                    }
+                })
+                
+                // create new contract if contract not exists/expired
+                if(!contract || getDateObj(contract.End) < new Date() ){
+                    await this.addContract(ID, status.Start, status.End, t)
+                    contract = await this.findContract(ID, t)
+                }
 
                 const options = {
                     year : 'numeric',
@@ -211,6 +221,7 @@ class contractService {
         })
         return transaction
     }
+    
 }
 
 module.exports = contractService

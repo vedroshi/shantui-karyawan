@@ -6,10 +6,9 @@ const controller = new statusController()
 
 router.patch('/checkexpired', controller.checkExpired)
 router.patch('/checkendcuti', controller.checkEndCuti)
-router.patch('/check' , controller.checkDue)
+router.patch('/warning' , controller.setWarning)
 
 router.post('/setendcuti/:id', controller.setEndCuti)
-router.patch('/warning' , controller.setWarning)
 router.post('/cutoff/:id' , controller.setCutOff)
 
 module.exports = router

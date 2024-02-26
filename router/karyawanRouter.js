@@ -31,9 +31,9 @@ const upload = multer({storage : storage, fileFilter : fileFilter})
 
 
 router.get('/' , controller.showKaryawan)
-router.get('/check', controller.checkApplication)
-
 router.post('/create' , upload.single('KTP'), controller.addKaryawan)
+
+router.get('/check', controller.checkApplication)
 
 router.get('/latestupdate', controller.getLatestUpdate)
 
@@ -46,7 +46,6 @@ router.get('/getKTP/:ktp', (req, res)=>{
   // Send the file
   res.sendFile(filePath);
 })
-
 
 router.use((err, req, res, next) => {
   // console.error(err.stack);

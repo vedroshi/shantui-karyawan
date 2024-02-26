@@ -63,6 +63,23 @@ class CalendarService {
             throw new Error(error)
         }
     }
+
+    async deleteEvents(title, date, t=null){
+        try{
+            await calendarModel.destroy({
+                where : {
+                    title : title,
+                    date : {
+                        [Op.gt] : {
+                            date
+                        }
+                    }
+                }
+            })
+        }catch(error){
+            throw new Error(error)
+        }
+    }
 }
 
 module.exports = CalendarService

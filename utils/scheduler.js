@@ -15,7 +15,7 @@ schedule.scheduleJob('0 0,10,17 * * *' , async ()=>{
     try{
         // Call Check Expired and Check End Cuti in StatusService
         const [applicationLog, warningLog, expiredLog, returnLog] = await Promise.all([
-            // Check if there is an employee have an early leave
+            // Check if there is an employee has their leave in advance
             employeeService.checkApplication(),
             // Check if there is an employee has their contract end in 7 days
             statService.setWarning(),
