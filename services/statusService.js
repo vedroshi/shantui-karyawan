@@ -126,7 +126,7 @@ class StatusService {
             const updated = sequelize.transaction(async (t) => {
                 const updateLog = []
                 try {
-                    // Find all Employee that Expired (Status.End == Today)
+                    // Find all Employee that Expired (Status.End <= Today)
                     const karyawan = await karyawanModel.findAll({
                         attributes: ['ID'],
                         include: [{
@@ -165,21 +165,22 @@ class StatusService {
                                     message: `Employee Cut Off`,
                                     type: 'Cut Off'
                                 })
-                            } else if (application.Application_Status == "Pending") {
-                                if (application.Application_Type == "Cuti" || application.Application_Type == "Kompensasi") {
+                            } else if (application.Application_Status === "Pending") {
+                                if(status.Status != "Close Project"){
                                     await this.setCloseProject(employee.ID, status.Start, status.End, t)
+                                    // Add Server Log
+                                    updateLog.push({
+                                        ID: employee.ID,
+                                        message: `Contract has Expired`,
+                                        type: 'Expired'
+                                    })
                                 }
-                                // Add Server Log
-                                updateLog.push({
-                                    ID: employee.ID,
-                                    message: `Contract has Expired`,
-                                    type: 'Expired'
-                                })
+                                continue
                             } else if (application.Application_Status === "Accepted") {
                                 if (application.Application_Type === "Kompensasi") {
                                     await this.extendContract(employee.ID, t)
                                 } else if (application.Application_Type === "Cuti" && getDateObj(application.Start) <= new Date()) {
-                                    await this.setCuti(employee, t);
+                                    await this.setCuti(employee, application, t);
                                     updateLog.push({
                                         ID: employee.ID,
                                         message: "This Employee takes a Leave",
@@ -195,6 +196,11 @@ class StatusService {
                                 }else{
                                     if(status.Status != "Close Project"){
                                         await this.setCloseProject(employee.ID, status.Start, status.End, t);
+                                        updateLog.push({
+                                            ID: employee.ID,
+                                            message: `Contract has Expired`,
+                                            type: 'Expired'
+                                        })
                                     }
                                     continue
                                 }
@@ -206,6 +212,7 @@ class StatusService {
                                     type: 'Expired'
                                 });
                             }
+                            
                         }
                     }
                     return updateLog
@@ -363,9 +370,9 @@ class StatusService {
         }, t)
     }
 
-    async setCuti(employee, t = null) {
+    async setCuti(employee, application, t = null) {
         const logService = new LogService()
-        await this.updateStatus(employee.ID, "Cuti", employee.Application.Start, employee.Application.End, t)
+        await this.updateStatus(employee.ID, "Cuti", application.Start, application.End, t)
 
         // Removing all from the application except "Depart" and "Arrival"
         await applicationModel.update({
@@ -381,9 +388,9 @@ class StatusService {
         })
 
         await logService.createLog(employee.ID, {
-            Start: employee.Application.Start,
+            Start: application.Start,
             Type: "Cuti",
-            Message: `${employee.Application.Depart ? `Berangkat dari ${employee.Application.Depart} ke ${employee.Application.Arrival}` : 'Mulai Cuti'} tanggal ${displayDate(getDateObj(employee.Application.Start))}`,
+            Message: `${application.Depart ? `Berangkat Cuti dari ${application.Depart} ke ${application.Arrival}` : 'Mulai Cuti'} tanggal ${displayDate(getDateObj(application.Start))}`,
         }, t)
     }
 
@@ -508,7 +515,8 @@ class StatusService {
                     },
                     transaction: t
                 })
-    
+   
+                
                 // Remove Calendar Events
                 await calendarService.deleteEvents(karyawan.Name, date, t)
 

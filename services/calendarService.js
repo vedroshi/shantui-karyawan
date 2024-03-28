@@ -68,13 +68,12 @@ class CalendarService {
         try{
             await calendarModel.destroy({
                 where : {
-                    title : title,
-                    date : {
-                        [Op.gt] : {
-                            date
-                        }
+                    Title : title,
+                    Start : {
+                        [Op.gt] : date
                     }
-                }
+                },
+                transaction : t
             })
         }catch(error){
             throw new Error(error)

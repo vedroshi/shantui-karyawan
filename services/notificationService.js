@@ -33,14 +33,16 @@ class notificationService{
         }
     }
 
-    // Get All Notifications
-    async getNotifications(){
+    // Get Notifications
+    async getNotifications(page){
         try{
             const notifications = await notificationModel.findAll({
                 group : ['ID', 'createdAt'],
                 order :[ 
                     ['createdAt', 'DESC']
-                ]
+                ],
+                limit : 10,
+                offset : page * 10
             })
             return notifications
         }catch(error){

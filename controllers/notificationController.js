@@ -14,7 +14,8 @@ class notificationController{
 
     async getNotifications(req, res, next){
         const service = new notificationService()
-        await service.getNotifications()
+        const page = req.params.page
+        await service.getNotifications(page)
         .then((response)=>{
             res.status(200).json(response)
         }).catch((error)=>{

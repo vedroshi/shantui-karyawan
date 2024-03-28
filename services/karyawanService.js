@@ -201,19 +201,26 @@ class karyawanService {
 
                 const statusService = new StatusService()
                 for (const employee of karyawan){
-                  
+                  const application = employee.Application
+
                   // Set Status and Add Log
-                  if(employee.Application.Application_Type == "Cuti"){
-                      await statusService.setCuti(employee, t)
+                  if(application.Application_Type == "Cuti"){
+                      // Set Cuti
+                      await statusService.setCuti(employee, application, t)
+
+                      // Add Log (Server)
                       updatelog.push({
                         ID : employee.ID,
-                        message : "This Employee takes a leave",
+                        message : "This Employee takes a Leave",
                         type : "Cuti"
                       })
                   }
 
-                  else if(employee.Application.Application_Type == "Resign"){
+                  else if(application.Application_Type == "Resign"){
+                      // Set Resign
                       await statusService.resign(employee, t)
+                      
+                      // Add Log (Server)
                       updatelog.push({
                         ID : employee.ID,
                         message : "Employee Resign",

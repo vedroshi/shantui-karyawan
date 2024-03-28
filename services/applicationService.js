@@ -253,9 +253,6 @@ class ApplicationService {
                                 Type: "Contract"
                             }
 
-                            // Add Log (Client Log)
-                            await lService.createLog(ID, extendLog, t)
-
                             // Add Log (Server Log)
                             logUpdates.push(extendLog)
 
@@ -299,17 +296,18 @@ class ApplicationService {
 
                         // Check if the date is before today
                         if (getDateObj(application.Start) <= new Date()) {
-                            await sService.updateStatus(ID, application.Application_Type, application.Start, application.End, t)
+                            await sService.setCuti(karyawan, application, t)
 
                             const leaveLog = {
                                 CreatedAt: formatDate(new Date()),
                                 Start: application.Start,
                                 End: application.End,
-                                Message: `${application.Depart ? `Berangkat dari ${application.Depart} ke ${application.Arrival}` : 'Mulai Cuti'} tanggal ${displayDate(getDateObj(application.Start))}`,
+                                Message: `${application.Depart ? `Berangkat Cuti dari ${application.Depart} ke ${application.Arrival}` : 'Mulai Cuti'} tanggal ${displayDate(getDateObj(application.Start))}`,
                                 Type: "Cuti"
                             }
 
-                            await lService.createLog(ID, leaveLog, t)
+                            // Add Log (Server)
+                            logUpdates.push(leaveLog)
 
                             const currentStatus = {
                                 Status: application.Application_Type,
@@ -317,20 +315,6 @@ class ApplicationService {
                                 End: application.End,
                                 message: "Status Changed to Cuti",
                             }
-
-                            logUpdates.push(leaveLog)
-                            // Clear the application except Depart and Arrival
-                            await applicationModel.update({
-                                Application_Type: null,
-                                Application_Status: null,
-                                Start: null,
-                                End: null,
-                            }, {
-                                where: {
-                                    EmployeeID: ID
-                                },
-                                transaction: t
-                            })
 
                             return {
                                 status: "Accepted",

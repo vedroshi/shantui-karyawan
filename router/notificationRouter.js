@@ -6,7 +6,7 @@ const notificationController = require('../controllers/notificationController')
 
 const controller = new notificationController()
 
-router.get('/', controller.getNotifications)
+router.get('/:page', controller.getNotifications)
 router.patch('/read/:id', controller.readNotification)
 router.patch('/readall', controller.readAllNotification)
 
