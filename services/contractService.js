@@ -5,16 +5,13 @@ const path = require('path')
 const docsInit = require('../utils/docs_connect')
 
 const contractsModel = require('../models/contracts.model')
-const statusModel = require('../models/status.model')
 const karyawanModel = require('../models/karyawan.model')
 const positionModel = require('../models/position.model')
 
-const PositionService = require('./positionService')
-const SalaryService = require('./salaryService')
-const { getDateObj } = require('../utils/utils')
+const { getDateObj, formatDate } = require('../utils/utils')
 
 class contractService {
-
+    
     async addContract(ID, start, end, t=null){
         try{
             await contractsModel.create({
@@ -72,17 +69,51 @@ class contractService {
     }
 
     async generateContract(ID){
+        const PositionService = require('./positionService')
+        const ApplicationService = require('./applicationService')
+        const SalaryService = require('./salaryService')
+        const StatusService = require('./statusService')
+
         const transaction = await sequelize.transaction(async (t)=>{
             try {
 
                 let contract = await this.findContract(ID, t)
-                const status = await statusModel.findOne({
-                    attributes : ['Start', "End"],
-                    where : {
-                        EmployeeID : ID
-                    }
-                })
+
+                // Get Status
+                const statusService = new StatusService()
+                const status = await statusService.showStatus(ID)
                 
+                // Get Application
+                const applicationService = new ApplicationService()
+                const application = await applicationService.getApplication(ID, t)
+                
+                 // renew contract if karyawan (Warning) applied for compensation form and accepted
+                if(application.Application_Type == "Kompensasi" && application.Application_Status == "Accepted" && status.Status == 'Warning'){
+                // If contract is the old -> create a new one (to prevent duplicate)
+                    if(getDateObj(contract.Start) < new Date()){
+                        await this.addContract(ID, application.Start, application.End, t)
+                        contract = await this.findContract(ID, t)
+                    }
+                }
+
+                // create new contract if karyawan Return (Cuti) & Set up date for Contract Date
+                if(status.Status == "Cuti"){
+                    // Start -> status.End
+                    // End -> status.End + 6 Months
+
+                    // If contract is the old -> create a new one (to prevent duplicate)
+                    if(getDateObj(contract.Start) < new Date()){
+                        // Define new Contract Period
+                        const start = status.End
+                        const end = new Date(start)
+                        end.setMonth(end.getMonth() + 6)
+
+                        // Create new Contract
+                        await this.addContract(ID, start, formatDate(end), t)
+                        contract = await this.findContract(ID, t)
+                    }
+                }
+
                 // create new contract if contract not exists/expired
                 if(!contract || getDateObj(contract.End) < new Date() ){
                     await this.addContract(ID, status.Start, status.End, t)
@@ -113,17 +144,7 @@ class contractService {
                 const contractNumber = noContract.join('/')
 
                 // Add it to StatusModel
-                await statusModel.update({
-                    Contract_Number : contractNumber
-                }, {
-                    where : {
-                        EmployeeID : ID,
-                        Contract_Number : {
-                            [Op.ne] : contractNumber
-                        }
-                    },
-                    transaction : t
-                })
+                await statusService.updateContractNumber(ID, contractNumber, t)
                 
                 // Render Document
                 const startContract = start.toLocaleDateString('id-ID', options)
@@ -145,6 +166,7 @@ class contractService {
                 const positionService = new PositionService()
                 const salaryService = new SalaryService()
 
+                
                 const positionListID = await positionService.findPosition(karyawan.Position, t)
                 const salary = await salaryService.findSalary(positionListID, t)
 

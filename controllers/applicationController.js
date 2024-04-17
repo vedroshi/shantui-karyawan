@@ -52,10 +52,7 @@ class ApplicationController {
        await service.reject(id)
        .then((response)=>{
             if(response){
-                res.status(200).json({
-                    status : "Rejected",
-                    message : "Application Rejected"
-                })
+                res.status(200).json(response)
             }
        }).catch((error)=>{
             if(error.message == "Application not Found"){

@@ -7,7 +7,7 @@ const logger = require('../utils/logger')
 
 
 // Execute Everyday at 00:00, 09:00, 10:00 and 17:00 
-schedule.scheduleJob('0 0,9,10,17 * * *' , async ()=>{
+schedule.scheduleJob('0 0,9,17 * * *' , async ()=>{
     const statService = new statusService()
     const notifService = new notificationService()
     const employeeService = new karyawanService()

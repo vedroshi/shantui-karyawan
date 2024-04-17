@@ -9,7 +9,7 @@ const controller = new KaryawanController()
 
 const storage = multer.diskStorage({
     destination : (req, file, cb)=>{
-        cb(null, 'uploads/')
+        cb(null, `uploads/${process.env.DB_Name}/`)
     },
     filename : (req, file, cb) =>{
         const ext = path.extname(file.originalname);
@@ -41,8 +41,7 @@ router.get('/getKTP/:ktp', (req, res)=>{
   const ktp = req.params.ktp;
  
   // Update the path to your KTP images folder
-  const filePath = path.join(__dirname, '../uploads/', ktp);
-
+  const filePath = path.join(__dirname, `../uploads/${process.env.DB_NAME}/`, ktp);
   // Send the file
   res.sendFile(filePath);
 })

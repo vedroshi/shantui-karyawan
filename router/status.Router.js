@@ -10,5 +10,6 @@ router.patch('/warning' , controller.setWarning)
 
 router.post('/setendcuti/:id', controller.setEndCuti)
 router.post('/cutoff/:id' , controller.setCutOff)
+router.post('/resign/:id', controller.setResign)
 
 module.exports = router

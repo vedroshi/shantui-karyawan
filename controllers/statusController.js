@@ -1,6 +1,8 @@
 const statusService = require('../services/statusService')
 const karyawanService = require('../services/karyawanService')
 const notificationService = require('../services/notificationService')
+const { response } = require('express')
+
 
 
 class statusController {
@@ -42,6 +44,24 @@ class statusController {
             next(error)
         })
     
+    }
+    
+    setResign(req, res, next){
+        const id = req.params.id;
+        const data = req.body;
+
+        const service = new statusService()
+        
+        service.resign(id, data.Date)
+        .then((response) => {
+            res.status(200).json({
+                start : data.Date,
+                message : "Employee Resign"
+            })
+        }).catch((err)=>{
+            next(err)
+        })
+
     }
 
     setWarning(req, res, next){

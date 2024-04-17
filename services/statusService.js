@@ -187,7 +187,7 @@ class StatusService {
                                         type: "Cuti"
                                     });
                                 } else if (application.Application_Type === "Resign" && getDateObj(application.Start) <= new Date()) {
-                                    await this.resign(employee, t);
+                                    await this.resign(ID, application.Start, t);
                                     updateLog.push({
                                         ID: employee.ID,
                                         message: `Employee Resign`,
@@ -453,19 +453,27 @@ class StatusService {
         }
     }
 
-    async resign(employee, t = null) {
+    async resign(ID, date, t = null) {
         const logService = new LogService()
         const calendarService = new CalendarService()
 
-        await this.updateStatus(employee.ID, "Resign", employee.Application.Start, null, t = t)
+        const karyawan = await karyawanModel.findOne({
+            attributes : ['Name'],
+            where : {
+                ID : ID
+            },
+            transaction : t
+        })
+
+        await this.updateStatus(ID, "Resign", date, null, t = t)
 
         // Remove Calendar Events
-        await calendarService.deleteEvents(employee.Name, employee.Application.Start, t)
+        await calendarService.deleteEvents(karyawan.Name, date, t)
 
-        await logService.createLog(employee.ID, {
-            Start: employee.Application.Start,
+        await logService.createLog(ID, {
+            Start: date,
             Type: "Resign",
-            Message: `Resign Tanggal ${displayDate(getDateObj(employee.Application.Start))}`
+            Message: `Resign Tanggal ${displayDate(getDateObj(date))}`
         }, t)
     }
 
@@ -473,58 +481,73 @@ class StatusService {
         try {
             const logService = new LogService()
             const calendarService = new CalendarService()
-            
-            const transaction = sequelize.transaction(async(t) =>{
-                const karyawan = await karyawanModel.findOne({
-                    attributes : ['Name'],
-                    where : {
-                        ID : ID
-                    },
-                    transaction : t
-                })
-    
-                const changes = await this.updateStatus(ID, "Cut Off", date, null, t = t)
-    
-                // Add Log
-                await logService.createLog(ID, {
-                    Start: formatDate(date),
-                    Type: "Cut Off",
-                    Message: `Cut Off tanggal ${displayDate(date)}`
-                }, t)
-    
-                // Add Events to Calendar
-                await calendarService.addEvent({
-                    Title: karyawan.Name,
-                    Start: formatDate(date),
-                    Tags: 'Cut Off',
-                    Description: "Cut Off"
-                }, t)
-    
-    
-                // Emptying the Application
-                await applicationModel.update({
-                    Application_Type: null,
-                    Application_Status: null,
-                    Start: null,
-                    End: null,
-                    Arrival: null,
-                    Depart: null,
-                }, {
-                    where: {
-                        EmployeeID: ID
-                    },
-                    transaction: t
-                })
-   
-                
-                // Remove Calendar Events
-                await calendarService.deleteEvents(karyawan.Name, date, t)
 
-                return changes
+            const karyawan = await karyawanModel.findOne({
+                attributes : ['Name'],
+                where : {
+                    ID : ID
+                },
+                transaction : t
             })
 
-            return transaction
+            const changes = await this.updateStatus(ID, "Cut Off", date, null, t = t)
+
+            // Add Log
+            await logService.createLog(ID, {
+                Start: formatDate(date),
+                Type: "Cut Off",
+                Message: `Cut Off tanggal ${displayDate(date)}`
+            }, t)
+
+            // Add Events to Calendar
+            await calendarService.addEvent({
+                Title: karyawan.Name,
+                Start: formatDate(date),
+                Tags: 'Cut Off',
+                Description: "Cut Off"
+            }, t)
+
+
+            // Emptying the Application
+            await applicationModel.update({
+                Application_Type: null,
+                Application_Status: null,
+                Start: null,
+                End: null,
+                Arrival: null,
+                Depart: null,
+            }, {
+                where: {
+                    EmployeeID: ID
+                },
+                transaction: t
+            })
+
+            
+            // Remove Calendar Events
+            await calendarService.deleteEvents(karyawan.Name, date, t)
+
+            return changes
+
         } catch (error) {
+            throw error
+        }
+    }
+
+    async updateContractNumber(ID, contractNumber, t=null){
+        try{
+            await statusModel.update({
+                Contract_Number : contractNumber
+            }, {
+                where : {
+                    EmployeeID : ID,
+                    Contract_Number : {
+                        [Op.ne] : contractNumber
+                    }
+                },
+                transaction : t
+            })
+        }catch(error){
             throw error
         }
     }

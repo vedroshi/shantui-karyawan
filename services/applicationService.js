@@ -1,14 +1,9 @@
 const applicationModel = require('../models/application.model')
-const karyawanModel = require('../models/karyawan.model')
 
 const { Op } = require('sequelize')
 
-const { getDateObj, displayDate, formatDate, revertDate } = require('../utils/utils')
+const { getDateObj, displayDate, formatDate } = require('../utils/utils')
 const { sequelize } = require('../utils/db_connect')
-
-const StatusService = require('./statusService')
-const LogService = require('./logService')
-const CalendarService = require('./calendarService')
 
 class ApplicationService {
     // Add application when Karyawan is Added
@@ -48,11 +43,15 @@ class ApplicationService {
     // Apply application
     async apply(ID, form) {
         try {
+            const LogService = require('./logService')
 
             const lservice = new LogService()
-            const currentApplication = await this.getApplication(ID)
+
+            
             const newApplication = sequelize.transaction(async (t) => {
                 try {
+                    const currentApplication = await this.getApplication(ID, t)
+
                     const logData = {
                         CreatedAt: formatDate(new Date()),
                         Start: null,
@@ -60,13 +59,14 @@ class ApplicationService {
                         Type: "Apply",
                     }
 
+                    // Check if there is a changes in the Application form
                     const areFormsEqual = Object.keys(form).every(
                         (key) => currentApplication[key] === form[key]
                     );
-
                     if (areFormsEqual) {
                         throw new Error("Form Does not Change");
                     }
+
 
                     // Update the Form
                     const application = await applicationModel.update(form, {
@@ -94,7 +94,7 @@ class ApplicationService {
                             break;
                     }
 
-
+                    // Edit Application Form
                     if (currentApplication.Application_Status == "Pending") {
                         var changedForm = [];
 
@@ -164,11 +164,18 @@ class ApplicationService {
 
     // Approve application
     async approve(ID) {
+        // Lazy Instatiation Services to avoid circular Dependencies
+        const StatusService = require('./statusService')
+        const karyawanService = require('./karyawanService')
+        const LogService = require('./logService')
+        const CalendarService = require('./calendarService')
+
         try {
             const updated = sequelize.transaction(async (t) => {
                 try {
-                    const lService = new LogService()
+
                     const sService = new StatusService()
+                    const lService = new LogService()
                     const cService = new CalendarService()
 
                     const logUpdates = []
@@ -192,12 +199,7 @@ class ApplicationService {
                     }
 
                     // Find Application
-                    const application = await applicationModel.findOne({
-                        where: {
-                            EmployeeID: ID
-                        },
-                        transaction: t
-                    })
+                    const application = await this.getApplication(ID, t)
 
                     const acceptLog = {
                         CreatedAt: formatDate(new Date()),
@@ -212,17 +214,10 @@ class ApplicationService {
                     logUpdates.push(acceptLog)
 
                     // Get the name to set it on the agenda (calendar)
-                    const karyawan = await karyawanModel.findOne({
-                        attributes: ['ID', 'Name'],
-                        where: {
-                            ID: ID
-                        },
-                        limit: 1,
-                        transaction: t
-                    })
+                    const kService = new karyawanService()
+                    const karyawan = await kService.getKaryawan(ID, t)
 
                     // event Data to be added to Calendar
-
                     if (application.Application_Type == "Kompensasi") {
 
                         // Add Events to Calendar (For Start and End)
@@ -263,8 +258,6 @@ class ApplicationService {
                                 End: application.End,
                                 message: "Status Changed to Active",
                             }
-
-                            await this.clearForm(ID, t)
 
                             return {
                                 status: "Accepted",
@@ -386,9 +379,15 @@ class ApplicationService {
 
     // Reject application
     async reject(ID) {
+        const StatusService = require('./statusService')
+        const LogService = require('./logService')
+        
         try {
             const updated = sequelize.transaction(async (t) => {
                 try {
+
+                    const logUpdates = []
+
                     // Update Application Status
                     const rejected = await applicationModel.update({
                         Application_Status: "Rejected"
@@ -408,13 +407,9 @@ class ApplicationService {
                     }
 
                     // Find the Application Updated
-                    const application = await applicationModel.findOne({
-                        where: {
-                            EmployeeID: ID
-                        },
-                        transaction: t
-                    })
-
+                    const application = await this.getApplication(ID, t);
+                    
+                    // Push Log (Client & Server)
                     const lService = new LogService()
 
                     await lService.createLog(ID, {
@@ -424,12 +419,41 @@ class ApplicationService {
                         Type: "Reject"
                     }, t)
 
+                    // Cut Off
+                    if (getDateObj(application.Start) <= new Date()){
+                        const sService = new StatusService()
+                        await sService.cutOff(ID, application.Start, t)
+                        
+                        const currentStatus = {
+                            Status: "Cut Off",
+                            Start: application.Start,
+                            End: null,
+                            message: "Status Changed to Cut Off",
+                        }
+
+                        const cutOffLog = {
+                            CreatedAt: formatDate(new Date()),
+                            Start: application.Start,
+                            Message: `Cut Off tanggal ${displayDate(getDateObj(application.Start))}`,
+                            Type: "Cut Off"
+                        }
+
+                        logUpdates.push(cutOffLog)
+
+                        return{
+                            status : "Rejected",
+                            currentStatus,
+                            logUpdates
+                        }
+                    }
+
                     return {
                         status: "Rejected",
-                        message: "Application Rejected"
+                        message: "Application Rejected",
                     }
 
                 } catch (error) {
+                    await t.rollback();
                     throw error
                 }
             })

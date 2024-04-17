@@ -1,17 +1,16 @@
 const { sequelize } = require("../utils/db_connect");
 const { getDateObj, displayDate, formatDate } = require('../utils/utils')
 
-const karyawanModel = require("../models/karyawan.model");
 
 const positionService = require("./positionService");
 const companyService = require("./companyService");
 const StatusService = require("./statusService");
 const LogService = require("./logService");
 const ApplicationService = require("./applicationService");
-const CalendarService = require("./calendarService")
-const ContractService = require("./contractService");
+const CalendarService = require("./calendarService");
 
 const positionModel = require("../models/position.model");
+const karyawanModel = require("../models/karyawan.model");
 const statusModel = require("../models/status.model");
 const companyModel = require("../models/company.model");
 const siteModel = require("../models/site.model");
@@ -24,6 +23,7 @@ const logger = require('../utils/logger');
 
 
 class karyawanService {
+  
   async addKaryawan(data, file) {
     try {
       const positionData = data.Position;
@@ -37,9 +37,8 @@ class karyawanService {
           const cService = new companyService();
           const sService = new StatusService();
           const appService = new ApplicationService();
-          const lService = new LogService()
+          const lService = new LogService();
           const calendarService = new CalendarService();
-          // const contractService = new ContractService();
 
           // Add Position and Company they are assigned to
           const position = await pService.upsertPosition(positionData, t);
@@ -59,14 +58,11 @@ class karyawanService {
             KTP : KTP.name || KTP.filename
           }, {transaction : t});
 
-
           if(karyawan){
             // Create Status and Application
-            const newStatus = await sService.addStatus(karyawan, t);
+            await sService.addStatus(karyawan, t);
             await appService.addApplication(karyawan.ID, t);
-            // Create Contract
-            // await contractService.addContract(karyawan.ID, newStatus.Start, newStatus.End, t)
-
+         
             // Create Event to Calendar Agenda
             // Start Date
             await calendarService.addEvent({
@@ -75,6 +71,7 @@ class karyawanService {
               Description : "Masuk Kerja",
               Start : data.Join_Date
             }, t)
+
             // End Date
             await calendarService.addEvent({
               Title : data.Name,
@@ -162,6 +159,21 @@ class karyawanService {
     }
   }
 
+  async getKaryawan(ID, t= null){
+    try{
+      const karyawan = await karyawanModel.findOne({
+          where: {
+              ID: ID
+          },
+          limit: 1,
+          transaction: t
+      })
+      return karyawan
+    } catch(error){
+      throw error
+    }
+  }
+
   async getKaryawanList(IDList, t=null){
     try{
       const karyawan = await karyawanModel.findAll({
@@ -190,7 +202,7 @@ class karyawanService {
                     as: 'Application',
                     where: { 
                         '$Application.Start$': {
-                          [Op.lte] : formatDate(new Date())
+                          [Op.lt] : formatDate(new Date())
                         } ,
                     
                         '$Application.Application_Status$': 'Accepted',
@@ -218,7 +230,7 @@ class karyawanService {
 
                   else if(application.Application_Type == "Resign"){
                       // Set Resign
-                      await statusService.resign(employee, t)
+                      await statusService.resign(employee.ID, application.Start, t)
                       
                       // Add Log (Server)
                       updatelog.push({
@@ -275,7 +287,6 @@ class karyawanService {
     }
   }
 
- 
 }
 
 module.exports = karyawanService;
