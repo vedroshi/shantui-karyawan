@@ -46,6 +46,8 @@ router.get('/getKTP/:ktp', (req, res)=>{
   res.sendFile(filePath);
 })
 
+router.post('/rejoin/:id', controller.rejoin);
+
 router.use((err, req, res, next) => {
   // console.error(err.stack);
   res.status(500).json({ error: err.message });

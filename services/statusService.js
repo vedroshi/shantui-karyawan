@@ -333,7 +333,7 @@ class StatusService {
         this.updateStatus(ID, "Active", start, end, t = t)
 
         // Create New Contract
-        await contractService.addContract(ID, start, end, t = t)
+        // await contractService.addContract(ID, start, end, t = t)
 
         // Create Log (Client)
         await logService.createLog(ID, {
@@ -551,6 +551,7 @@ class StatusService {
             throw error
         }
     }
+
 }
 
 module.exports = StatusService

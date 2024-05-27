@@ -6,6 +6,9 @@ const router = express.Router()
 const path = require('path')
 
 router.get('/generate/:id', controller.generateContract)
+router.get('/show', controller.showContracts)
+router.get('/getperiod', controller.getPeriod)
+router.patch('/sign/:no' , controller.signContract)
 
 router.get('/download', (req, res)=>{
     const filePath = path.join(__dirname,'../contracts/July 2023/PKWT - BUDI.docx')

@@ -67,3 +67,6 @@ positionListModel.hasMany(salaryModel, {
     foreignKey : 'PositionListID',
     onDelete : 'NO ACTION'
 })
+
+// Contracts
+contractsModel.belongsTo(karyawanModel)

@@ -7,7 +7,7 @@ class PositionService{
     async upsertPosition (position, t=null) {
         try{
         
-            position.Tonnage = position.Tonnage || null
+            position.Tonnage = position.Tonnage ? position.Tonnage : null
     
             const [data, created] = await PositionModel.findOrCreate({
                 where: {
@@ -65,6 +65,16 @@ class PositionService{
             })
             
             return position.ID
+        }catch(error){
+            throw error
+        }
+    }
+
+    // List All Position
+    async showPositions(){
+        try{
+            const positions = await PositionModel.findAll({})
+            return positions
         }catch(error){
             throw error
         }

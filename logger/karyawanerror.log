@@ -1,0 +1,9 @@
+{ message: "Cannot read properties of undefined (reading 'PositionService')", level: 'error', timestamp: '2024-04-04T04:40:32.949Z' }
+{ message: "Unknown column 'Status.$Status.End' in 'on clause'", level: 'error', timestamp: '2024-04-25T02:03:00.368Z' }
+{ message: "TypeError: Cannot read properties of undefined (reading 'Tonnage')", level: 'error', timestamp: '2024-05-02T04:43:15.373Z' }
+{ message: "TypeError: Cannot read properties of undefined (reading 'Tonnage')", level: 'error', timestamp: '2024-05-02T04:45:53.216Z' }
+{ message: "TypeError: Cannot read properties of undefined (reading 'Tonnage')", level: 'error', timestamp: '2024-05-02T04:46:46.854Z' }
+{ message: "TypeError: Cannot read properties of undefined (reading 'Tonnage')", level: 'error', timestamp: '2024-05-02T04:47:22.168Z' }
+{ message: "TypeError: Cannot read properties of undefined (reading 'Tonnage')", level: 'error', timestamp: '2024-05-02T04:48:11.181Z' }
+{ message: "TypeError: Cannot read properties of undefined (reading 'Tonnage')", level: 'error', timestamp: '2024-05-02T04:57:12.026Z' }
+{ message: "TypeError: Cannot read properties of undefined (reading 'Tonnage')", level: 'error', timestamp: '2024-05-02T04:57:44.124Z' }

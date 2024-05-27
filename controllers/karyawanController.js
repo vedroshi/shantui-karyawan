@@ -9,14 +9,12 @@ class KaryawanController {
         service.addKaryawan(karyawanData, KTP)
         .then((response)=>{
             if(response){
-                res.status(200).json({message : "Karyawan is Added"})
+                res.status(200).json({
+                    message : "Karyawan is Added"
+                })
             }
         }).catch((error)=>{
-            
-            const errorMessage = error.message || 'Internal Server Error';
-            res.status(errorMessage ? 400 : 500).json({ 
-                message: errorMessage 
-            });
+            next(error)
         })
         
     }
@@ -52,6 +50,24 @@ class KaryawanController {
         await service.getLatestUpdate()
         .then((response)=>{
             res.status(200).json(response)
+        }).catch((error)=>{
+            next(error)
+        })
+    }
+
+    // Rejoin
+    async rejoin(req, res, next){
+        const id = req.params.id
+        const date = req.body.Date
+
+        const service = new karyawanService()
+        await service.rejoin(id, date)
+        .then((response)=>{
+            res.status(200).json({
+                success : true,
+                message : "karyawan Rejoin",
+                contract : response,
+            })
         }).catch((error)=>{
             next(error)
         })

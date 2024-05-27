@@ -5,8 +5,7 @@ const karyawanService = require('../services/karyawanService')
 
 const logger = require('../utils/logger')
 
-
-// Execute Everyday at 00:00, 09:00, 10:00 and 17:00 
+// Execute Everyday at 00:00, 09:00, and 17:00 
 schedule.scheduleJob('0 0,9,17 * * *' , async ()=>{
     const statService = new statusService()
     const notifService = new notificationService()
@@ -15,19 +14,19 @@ schedule.scheduleJob('0 0,9,17 * * *' , async ()=>{
     try{
         // Call Check Expired and Check End Cuti in StatusService
         const [applicationLog, warningLog, expiredLog, returnLog] = await Promise.all([
-            // Check if there is an employee has their leave in advance
-            employeeService.checkApplication(),
             // Check if there is an employee has their contract end in 7 days
             statService.setWarning(),
             // Check if there is an employee has their contract ends
             statService.checkExpired(),
+            // Check if there is an employee has their leave in advance
+            employeeService.checkApplication(),
             // Check if there is an employee return 
             statService.checkEndCuti(),
         ])
     
     
         // Define logs to keep track which employee is updated
-        const allLogs = [...applicationLog,...warningLog, ...expiredLog, ...returnLog]
+        const allLogs = [...applicationLog, ...warningLog, ...expiredLog, ...returnLog]
         
         // get unique items from all logs
         const logs = [...new Set(allLogs)]
@@ -62,7 +61,6 @@ schedule.scheduleJob('0 0,9,17 * * *' , async ()=>{
 
         logger.info("Status Updated")
 
-        // Update Calendar
 
     }catch(err){
         console.error('Error in checkExpired job:', err);

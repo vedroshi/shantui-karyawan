@@ -6,6 +6,8 @@ const router = express.Router()
 
 const controller = new positionController()
 
+
+router.get('/', controller.showPositions)
 router.post('/create', controller.createPosition)
 
 

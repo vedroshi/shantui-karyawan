@@ -11,6 +11,16 @@ class PositionController{
             next(error)
         })
     }
+
+    async showPositions(req, res, next){
+        const service = new PositionService()
+        await service.showPositions()
+        .then((response)=>{
+            res.status(200).json(response)
+        }).catch((error)=>{
+            next(error)
+        })
+    }
 }
 
 module.exports = PositionController

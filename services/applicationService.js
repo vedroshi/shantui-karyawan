@@ -363,7 +363,8 @@ class ApplicationService {
 
                     return {
                         status: "Accepted",
-                        message: "Application Accepted"
+                        message: "Application Accepted",
+                        logUpdates
                     }
 
                 } catch (error) {
