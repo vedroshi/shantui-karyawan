@@ -47,6 +47,8 @@ router.get('/getKTP/:ktp', (req, res)=>{
 })
 
 router.post('/rejoin/:id', controller.rejoin);
+router.patch('/mutasi/:id', controller.mutasi);
+router.patch('/editposition/:id', controller.editPosition);
 
 router.use((err, req, res, next) => {
   // console.error(err.stack);

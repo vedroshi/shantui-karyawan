@@ -2,6 +2,7 @@ const PositionModel = require('../models/position.model')
 const positionListModel = require('../models/positionlist.model')
 
 const {Op} = require('sequelize')
+const { sequelize } = require('../utils/db_connect')
 
 class PositionService{
     async upsertPosition (position, t=null) {
@@ -79,6 +80,7 @@ class PositionService{
             throw error
         }
     }
+
 }
 
 

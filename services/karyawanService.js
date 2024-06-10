@@ -42,7 +42,8 @@ class karyawanService {
 
           // Add Position and Company they are assigned to
           const position = await pService.upsertPosition(positionData, t);
-          const company = await cService.upsertCompany(companyData, t);
+
+          const company = await cService.upsertCompany(companyData.Site, companyData.Name, t);
 
           // Add Employee
           const karyawan = await karyawanModel.create({
@@ -372,6 +373,74 @@ class karyawanService {
         t.rollback()
         throw error
       }
+    })
+    return transaction
+  }
+
+  async mutasi(ID, data){
+    const cService = new companyService()
+    const logService = new LogService()
+
+    const transaction = await sequelize.transaction(async (t)=>{
+      try{
+        // Update Position
+        const company = await cService.upsertCompany(data.Site, data.User, t)
+
+        // Update CompanyID in karyawan table
+        await karyawanModel.update({
+          CompanyID : company.ID
+        }, {
+          where : {
+            ID : ID
+          },
+          limit : 1,
+          transaction : t
+        })
+
+        // Add Log 
+        await logService.createLog(ID, {
+          Start : data.Date,
+          End : null,
+          Type : 'Mutasi',
+          Message : `Mutasi ke ${data.User}-${data.Site} tanggal ${displayDate(getDateObj(data.Date))}`
+        }, t)
+
+        return true
+      }catch(error){
+        t.rollback()
+        throw error
+      }
+    })
+    return transaction
+  }
+
+  async editPosition(ID, data){
+    const transaction = await sequelize.transaction(async(t) =>{
+        try{
+            // Find Position ID
+            const position = await positionModel.findOne({
+                attributes : ["ID"],
+                where : {
+                    [Op.and] : {
+                        Name : data.Name,
+                        Tonnage : data.Tonnage
+                    }
+                },
+                transaction : t,
+            })
+            // Update Karyawan Position
+            await karyawanModel.update({
+              PositionID : position.ID,
+            },{
+              where : {
+                ID : ID
+              },
+              transaction : t
+            })
+        }catch(error){
+            t.rollback()
+            throw error
+        }
     })
     return transaction
   }

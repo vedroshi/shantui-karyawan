@@ -182,7 +182,7 @@ class contractService {
                     "HSE", "Admin", "Admin Plant", "Bobok", "Mekanik",
                     "Mekanik Junior", "Tyreman", "Logistic", "Cleaning Service", 
                     "Welder", "Mekanik LV", "Accounting", "Assembly", "Service Man", 
-                    "Op Bubut", "Leader Bobok", "Leader Support", "Foreman", "Mekanik Leader"
+                    "Op Bubut", "Leader Bobok", "Leader Support", "Mekanik Leader"
                 ]
                 
                 // Checking if the employee is working for more than 6 months

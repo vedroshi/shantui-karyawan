@@ -7,3 +7,5 @@
 { message: "TypeError: Cannot read properties of undefined (reading 'Tonnage')", level: 'error', timestamp: '2024-05-02T04:48:11.181Z' }
 { message: "TypeError: Cannot read properties of undefined (reading 'Tonnage')", level: 'error', timestamp: '2024-05-02T04:57:12.026Z' }
 { message: "TypeError: Cannot read properties of undefined (reading 'Tonnage')", level: 'error', timestamp: '2024-05-02T04:57:44.124Z' }
+{ message: "Error: WHERE parameter \"Name\" has invalid \"undefined\" value", level: 'error', timestamp: '2024-05-28T06:24:56.765Z' }
+{ message: "Error: WHERE parameter \"Name\" has invalid \"undefined\" value", level: 'error', timestamp: '2024-05-28T06:25:32.280Z' }

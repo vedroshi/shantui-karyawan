@@ -72,6 +72,39 @@ class KaryawanController {
             next(error)
         })
     }
+
+    // Mutasi
+    async mutasi(req, res, next){
+        const id = req.params.id
+        const data = req.body
+        const service = new karyawanService()
+        
+        await service.mutasi(id, data)
+        .then((response)=>{
+            res.status(200).json({
+                success : true,
+                message : "Mutasi Successful"
+            })
+        }).catch((error)=>{
+            next(error)
+        })
+    }
+
+    async editPosition(req, res, next){
+        const id = req.params.id
+        const data = req.body
+        const service = new karyawanService()
+        
+        await service.editPosition(id, data)
+        .then((response)=>{
+            res.status(200).json({
+                success : true,
+                message : 'Position Edited'
+            })
+        }).catch((error)=>{
+            next(error)
+        })
+    }
 }
 
 module.exports = KaryawanController

@@ -10,7 +10,7 @@ module.exports = {
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
     return queryInterface.sequelize.transaction(async (transaction) => {
-      await queryInterface.sequelize.query(`ALTER Table log_karyawan modify column Type ENUM('Contract','Apply','Cuti','Resign','Accept','Reject','Edit','Return','Cut Off')`, {
+      await queryInterface.sequelize.query(`ALTER Table log_karyawan modify column Type ENUM('Contract','Apply','Cuti','Resign','Accept','Reject','Edit','Return','Cut Off','Mutasi')`, {
         transaction : transaction
       })
     })
