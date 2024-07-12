@@ -103,7 +103,8 @@ class StatusService {
                     for (const employee of karyawan) {
                         warningLog.push({
                             ID: employee.EmployeeID,
-                            message: "Set to Warning"
+                            message: "Set to Warning",
+                            type : "Warning"
                         })
                     }
 
@@ -166,6 +167,7 @@ class StatusService {
                                     type: 'Cut Off'
                                 })
                             } else if (application.Application_Status === "Pending") {
+                                // If contract is expired and form still Pending
                                 if(status.Status != "Close Project"){
                                     await this.setCloseProject(employee.ID, status.Start, status.End, t)
                                     // Add Server Log
@@ -177,6 +179,7 @@ class StatusService {
                                 }
                                 continue
                             } else if (application.Application_Status === "Accepted") {
+
                                 if (application.Application_Type === "Kompensasi") {
                                     await this.extendContract(employee.ID, t)
                                 } else if (application.Application_Type === "Cuti" && getDateObj(application.Start) <= new Date()) {

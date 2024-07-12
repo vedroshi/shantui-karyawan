@@ -88,8 +88,8 @@ class contractService {
                 const application = await applicationService.getApplication(ID, t)
 
                 // renew contract if karyawan (Warning) applied for compensation form and accepted
-                if (application.Application_Type == "Kompensasi" && application.Application_Status == "Accepted" && status.Status == 'Warning') {
-                    // If contract is the old -> create a new one (to prevent duplicate)
+                if (application.Application_Type == "Kompensasi" && application.Application_Status == "Accepted" && (status.Status == 'Warning' || status.Status == "Close Project")) {
+                    // If contract is the previous one -> create a new one (to prevent duplicate)
                     if (getDateObj(contract.Start) < new Date()) {
                         await this.addContract(ID, application.Start, application.End, t)
                         contract = await this.findContract(ID, t)
@@ -176,19 +176,50 @@ class contractService {
                     maximumFractionDigits: 3,
                 }
 
-                // Set Salary from 3.000.000 to 3.500.000 for employee in a certain position
+                // Set Salary from 3.500.000 to 3.000.000 for employee in a certain position
                 const excPosition = [
-                    "Helper", "Helper Assembling", "Mekanik Assembling", "HR",
-                    "HSE", "Admin", "Admin Plant", "Bobok", "Mekanik",
-                    "Mekanik Junior", "Tyreman", "Logistic", "Cleaning Service", 
-                    "Welder", "Mekanik LV", "Accounting", "Assembly", "Service Man", 
-                    "Op Bubut", "Leader Bobok", "Leader Support", "Mekanik Leader"
+                    "Operator Crane", "Operator Excavator", "Operator Loader",
+                    "HSE", "Leader Bobok", "Leader Support", "Mekanik Leader", "Foreman",
+                    "SPV Foreman", "Jubir"
                 ]
                 
-                // Checking if the employee is working for more than 6 months
-                if((new Date() - getDateObj(karyawan.Join_Date) >= 6 * 30 * 24 * 60 * 60 * 1000) && excPosition.includes(karyawan.Position.Name) ){
+                // Checking if the employee is working for less than 6 months
+                if((start - getDateObj(karyawan.Join_Date) < 6 * 30 * 24 * 60 * 60 * 1000) && !excPosition.includes(karyawan.Position.Name) ){
                     // Update "Gaji Pokok"
-                    salary.Gaji_Pokok = 3500000
+                    salary.Gaji_Pokok = 3000000
+                }
+
+                // Work Duration Setup
+                const operators = [
+                    "Operator Crane", "Operator Excavator", "Operator Loader", "Operator Dozer",
+                    "Driver Mixer", "Driver DT", "Driver LV", "Driver LT", "Driver Menhol",
+                    "Driver Trailer", "Operator Yapcrane"
+                ]
+
+                const staffs = [
+                    "Mekanik", "Helper", "Mekanik Junior", "Mekanik Repair", "Mekanik Crane", "Mekanik Leader",
+                    "Helper Assembling", "Tyreman", "SPV Tyreman", "Leader Tyreman", "Leader Bobok",
+                    "Bobok", "Leader Support", "Logistic", "Assembly", "OP Bubut", "Welder"
+                ]
+
+                const admins = [
+                    "Admin", "Admin Plant", "HR", "Accounting", "Bobok", "Service Man", "Cleaning Service"
+                ]
+
+                let workDuration = {
+                    Duration : "-",
+                    Break : "-"
+                }
+
+                if(operators.includes(karyawan.Position.Name)){
+                    workDuration.Duration = "07.00 - 17.00"
+                    workDuration.Break = "2 Jam / hari"
+                }else if(admins.includes(karyawan.Position.Name)){
+                    workDuration.Duration = "08.00 - 17.30"
+                    workDuration.Break = "11.30 - 13.30"
+                }else if(staffs.includes(karyawan.Position.Name)){
+                    workDuration.Duration = "Shift 1 : 07.00 - 17.00 \nShift 2 : 10.00 - 21.00 \nShift 3 : 20.00 - 07.00"
+                    workDuration.Break = "1 Jam / hari"
                 }
 
                 const dataRender = {
@@ -208,7 +239,8 @@ class contractService {
                         Upah_Perjam: salary.Upah_Perjam ? salary.Upah_Perjam.toLocaleString('en-US', salaryFormatOptions).replace(/,/g, '.') : null,
                         Uang_Kehadiran: salary.Uang_Kehadiran ? salary.Uang_Kehadiran.toLocaleString('en-US', salaryFormatOptions).replace(/,/g, '.') : null,
                         Overtime: salary.Overtime ? salary.Overtime.toLocaleString('en-US', salaryFormatOptions).replace(/,/g, '.') : null
-                    }
+                    },
+                    Durations : workDuration
                 }
 
                 const contractPath = path.join(__dirname, `../contracts/${start.toLocaleDateString('en-EN', { month: 'long' })} ${start.getFullYear()}`)
@@ -245,7 +277,7 @@ class contractService {
                 fs.writeFileSync(filePath, buf);
 
                 return {
-                    status: "Success",
+                    success : true,
                     data: dataRender,
                     path: filePath,
                     message: "Contract Generated"

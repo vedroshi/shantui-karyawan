@@ -20,6 +20,7 @@ const logModel = require('../models/log.model');
 const { Op } = require("sequelize");
 
 const logger = require('../utils/logger');
+const notificationService = require("./notificationService");
 
 
 class karyawanService {
@@ -176,14 +177,12 @@ class karyawanService {
     }
   }
 
-  async getKaryawanList(IDList, t = null) {
+  async getKaryawanList(karyawanID, t = null) {
     try {
-      const karyawan = await karyawanModel.findAll({
+      const karyawan = await karyawanModel.findOne({
         attributes: ['Name'],
         where: {
-          ID: {
-            [Op.in]: IDList
-          }
+          ID: karyawanID
         },
         transaction: t
       })
@@ -444,6 +443,7 @@ class karyawanService {
     })
     return transaction
   }
+
 }
 
 module.exports = karyawanService;

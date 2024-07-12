@@ -105,6 +105,7 @@ class KaryawanController {
             next(error)
         })
     }
+
 }
 
 module.exports = KaryawanController

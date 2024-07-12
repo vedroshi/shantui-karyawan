@@ -121,34 +121,60 @@ class statusController {
         ])
     
     
-        // Define logs to keep track which employee is updated
-        const logs = [...applicationLog,...warningLog, ...expiredLog, ...returnLog]
-        console.info(logs)
+         // Define logs to keep track which employee is updated
+         const allLogs = [...applicationLog, ...warningLog, ...expiredLog, ...returnLog]
+        
+         // get unique items from all logs
+         const logs = [...new Set(allLogs)]
+         console.log(logs)
+
+        // const logID = logs.map(log => log.ID)
 
         // Add Notification
-        const warningEmployeeID = warningLog.map(log => log.ID)
-        const expiredEmployeeID = expiredLog.map(log => log.ID)
-        const returnEmployeeID = returnLog.map(log => log.ID)
+        // const warningEmployeeID = warningLog.map(log => log.ID)
+        // const expiredEmployeeID = expiredLog.map(log => log.ID)
+        // const returnEmployeeID = returnLog.map(log => log.ID)
         
 
-        const [warningKaryawan, expiredKaryawan, returnKaryawan] = await Promise.all([
-           warningEmployeeID.length ? employeeService.getKaryawanList(warningEmployeeID) : null,
-           warningEmployeeID.length ? employeeService.getKaryawanList(expiredEmployeeID) : null,
-           warningEmployeeID.length ? employeeService.getKaryawanList(returnEmployeeID) : null,
-        ])
+        // const [warningKaryawan, expiredKaryawan, returnKaryawan] = await Promise.all([
+        //    warningEmployeeID.length ? employeeService.getKaryawanList(warningEmployeeID) : null,
+        //    warningEmployeeID.length ? employeeService.getKaryawanList(expiredEmployeeID) : null,
+        //    warningEmployeeID.length ? employeeService.getKaryawanList(returnEmployeeID) : null,
+        // ])
      
-        const addNotifications = async (karyawanList, message) =>{
+        const addNotifications = async (karyawanList) =>{
+            let message = ""
             if (karyawanList){
                 for (const karyawan of karyawanList){
-                    notifService.addNotification(karyawan.Name, message)
+                    if(karyawan.type == "Warning"){
+                        message = "Sudah Mau Jatuh Tempo"
+                    }else if(karyawan.type == "Expired"){
+                        message = "Sudah Jatuh Tempo"
+                    }else if(karyawan.type == "Cuti"){
+                        message = "Mulai Cuti"
+                    }else if(karyawan.type == "Cut Off"){
+                        message = "Cut Off"
+                    }else if(karyawan.type == "Resign"){
+                        message = "Resign"
+                    }else if(karyawan.type == "Return"){
+                        message = "Balik Cuti"
+                    }
+
+                    // Get Employee Name Based on ID in logs
+                    const employee = await employeeService.getKaryawanList(karyawan.ID)
+                    const name = employee.Name
+
+                    // Add Notification
+                    await notifService.addNotification(name, message)
                 }
             }
         }
 
         await Promise.all([
-            addNotifications(warningKaryawan, "Sudah mau jatuh tempo"),
-            addNotifications(expiredKaryawan, "Sudah jatuh tempo"),
-            addNotifications(returnKaryawan, "Balik Cuti")
+        //     addNotifications(warningKaryawan, "Sudah mau jatuh tempo"),
+        //     addNotifications(expiredKaryawan, "Sudah jatuh tempo"),
+        //     addNotifications(returnKaryawan, "Balik Cuti")
+            addNotifications(logs)
         ])
 
             res.status(200).json(logs)

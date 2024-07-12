@@ -12,4 +12,12 @@ router.post('/setendcuti/:id', controller.setEndCuti)
 router.post('/cutoff/:id' , controller.setCutOff)
 router.post('/resign/:id', controller.setResign)
 
+router.patch('/check' , controller.checkDue)
+
+
+router.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: err.message });
+});
+  
 module.exports = router
