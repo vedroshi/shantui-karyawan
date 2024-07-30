@@ -188,6 +188,12 @@ class contractService {
                     // Update "Gaji Pokok"
                     salary.Gaji_Pokok = 3000000
                 }
+                
+                // Uang Kehadiran HSE
+                if((start - getDateObj(karyawan.Join_Date) < 6 * 30 * 24 * 60 * 60 * 1000) && karyawan.Position.Name == "HSE" ){
+                    // Update "Gaji Pokok"
+                    salary.Uang_Kehadiran = 2500000
+                }
 
                 // Work Duration Setup
                 const operators = [

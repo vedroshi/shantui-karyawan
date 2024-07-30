@@ -261,6 +261,7 @@ class ApplicationService {
 
                             return {
                                 status: "Accepted",
+                                message : "Application Accepted",
                                 currentStatus,
                                 logUpdates
                             }
@@ -311,6 +312,7 @@ class ApplicationService {
 
                             return {
                                 status: "Accepted",
+                                message : "Application Accepted",
                                 currentStatus,
                                 logUpdates
                             }
@@ -355,6 +357,7 @@ class ApplicationService {
 
                             return {
                                 status: "Accepted",
+                                message : "Application Accepted",
                                 currentStatus,
                                 logUpdates
                             }
@@ -443,6 +446,7 @@ class ApplicationService {
 
                         return{
                             status : "Rejected",
+                            message : "Application Rejected",
                             currentStatus,
                             logUpdates
                         }
